@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -57,5 +58,29 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    /**
+     * Get the screenings for the user (when user is responden)
+     */
+    public function screenings()
+    {
+        return $this->hasMany(WellBeingScreening::class);
+    }
+
+    /**
+     * Get the volunteer responses for the user (when user is relawan)
+     */
+    public function volunteerResponses()
+    {
+        return $this->hasMany(VolunteersResponse::class, 'volunteer_id');
+    }
+
+    /**
+     * Get the psychologist responses for the user (when user is psikolog)
+     */
+    public function psychologistResponses()
+    {
+        return $this->hasMany(PsychologistResponse::class, 'psychologist_id');
     }
 }
