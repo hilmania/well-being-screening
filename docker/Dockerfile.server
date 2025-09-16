@@ -1,0 +1,21 @@
+# Dockerfile.server
+
+FROM dunglas/frankenphp
+
+# Install dependencies
+RUN apt-get update && apt-get install -y gnupg
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+  && apt-get install -y nodejs
+
+# Install PHP extensions
+RUN install-php-extensions pcntl pdo_mysql
+
+# Cleanup
+RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get remove -y gnupg && apt-get clean
+
+EXPOSE 8000
+
+CMD ["php", "artisan", "octane:start", "--watch", "--host=0.0.0.0"]

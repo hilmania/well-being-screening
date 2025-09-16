@@ -1,0 +1,70 @@
+services:
+  mysql:
+    image: mysql:8.0
+    working_dir: /home/db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: dev
+      MYSQL_PASSWORD: secret
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  proxy:
+    image: nginx:stable-alpine
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/certs:/etc/nginx/certs
+    networks:
+      - app-network
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  server:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.server
+    ports:
+      - 8000:8000
+    environment:
+      CADDY_EXTRA_CONFIG: 'auto_https off'
+    volumes:
+      - ./:/app
+    networks:
+      - app-network
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.app
+    ports:
+      - 5173:5173
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - app-network
+    depends_on:
+      - mysql
+    stdin_open: true
+    tty: true
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
