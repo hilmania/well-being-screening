@@ -18,6 +18,23 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'role' => 'responden',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Relawan User',
+            'email' => 'relawan@example.com',
+            'role' => 'relawan',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Psikolog User',
+            'email' => 'psikolog@example.com',
+            'role' => 'psikolog',
+        ]);
+
+        $this->call([
+            ScreeningQuestionSeeder::class,
         ]);
     }
 }
