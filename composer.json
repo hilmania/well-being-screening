@@ -9,6 +9,7 @@
         "php": "^8.2",
         "filament/filament": "^4.0",
         "laravel/framework": "^12.0",
+        "laravel/octane": "^2.12",
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.1.1",
         "livewire/volt": "^1.7.0"

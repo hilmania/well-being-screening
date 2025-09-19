@@ -1,0 +1,99 @@
+# Dockerfile.production
+FROM dunglas/frankenphp AS base
+
+# Set production environment
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gnupg \
+    git \
+    unzip \
+    curl \
+    supervisor \
+    cron \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Install Node.js for asset compilation
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs
+
+# Install PHP extensions
+RUN install-php-extensions \
+    pcntl \
+    pdo_mysql \
+    pdo_sqlite \
+    redis \
+    opcache \
+    zip \
+    bcmath \
+    gd \
+    exif \
+    intl
+
+# Configure PHP for production
+COPY docker/php/production.ini /usr/local/etc/php/conf.d/production.ini
+
+# Set working directory
+WORKDIR /app
+
+# Copy composer files first for better layer caching
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies (production optimized)
+RUN composer install \
+    --no-dev \
+    --no-scripts \
+    --no-autoloader \
+    --optimize-autoloader \
+    --classmap-authoritative
+
+# Copy package.json for Node dependencies
+COPY package.json package-lock.json ./
+
+# Install Node dependencies and build assets
+RUN npm ci --only=production \
+    && npm run build \
+    && rm -rf node_modules
+
+# Copy application files
+COPY . .
+
+# Generate optimized autoloader
+RUN composer dump-autoload --optimize --classmap-authoritative
+
+# Set proper permissions
+RUN chown -R www-data:www-data /app \
+    && chmod -R 755 /app/storage \
+    && chmod -R 755 /app/bootstrap/cache \
+    && chmod 644 /app/.env.production
+
+# Create necessary directories
+RUN mkdir -p /app/storage/logs \
+    && mkdir -p /app/storage/framework/cache/data \
+    && mkdir -p /app/storage/framework/sessions \
+    && mkdir -p /app/storage/framework/views
+
+# Copy supervisor configuration
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy cron jobs
+COPY docker/cron/laravel-scheduler /etc/cron.d/laravel-scheduler
+RUN chmod 0644 /etc/cron.d/laravel-scheduler && crontab /etc/cron.d/laravel-scheduler
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+EXPOSE 8000
+
+# Copy entrypoint script
+COPY docker/entrypoint.production.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["frankenphp", "php-server", "--listen", ":8000", "--root", "/app/public"]

@@ -1,0 +1,18 @@
+{
+    auto_https off
+}
+
+:8000 {
+    root * /app/public
+    encode gzip
+    file_server
+    
+    @php path *.php
+    reverse_proxy @php unix//var/run/php/php-fpm.sock {
+        transport fastcgi {
+            split .php
+        }
+    }
+    
+    try_files {path} /index.php?{query}
+}

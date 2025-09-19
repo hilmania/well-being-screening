@@ -9,6 +9,15 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Health check endpoint for production monitoring
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'healthy',
+        'timestamp' => now()->toISOString(),
+        'version' => config('app.version', '1.0.0'),
+    ]);
+});
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

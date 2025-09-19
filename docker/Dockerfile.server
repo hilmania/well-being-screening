@@ -3,19 +3,44 @@
 FROM dunglas/frankenphp
 
 # Install dependencies
-RUN apt-get update && apt-get install -y gnupg
+RUN apt-get update && apt-get install -y \
+    gnupg \
+    git \
+    unzip \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
   && apt-get install -y nodejs
 
 # Install PHP extensions
-RUN install-php-extensions pcntl pdo_mysql
+RUN install-php-extensions pcntl pdo_mysql pdo_sqlite intl zip
 
-# Cleanup
-RUN rm -rf /var/lib/apt/lists/*
-RUN apt-get remove -y gnupg && apt-get clean
+# Set working directory
+WORKDIR /app
+
+# Copy composer files first for better layer caching
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies
+RUN composer install --no-dev --no-scripts --no-autoloader
+
+# Copy application
+COPY . .
+
+# Generate autoloader
+RUN composer dump-autoload --optimize
+
+# Set permissions
+RUN chown -R www-data:www-data /app \
+    && chmod -R 755 /app/storage \
+    && chmod -R 755 /app/bootstrap/cache
 
 EXPOSE 8000
 
-CMD ["php", "artisan", "octane:start", "--watch", "--host=0.0.0.0"]
+# Use FrankenPHP with default configuration
+CMD ["frankenphp", "php-server", "--listen", ":8000", "--root", "/app/public"]
