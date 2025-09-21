@@ -30,6 +30,7 @@
             </flux:navlist>
 
             <!-- Desktop User Menu -->
+            @auth
             <flux:dropdown class="hidden lg:block" position="bottom" align="start">
                 <flux:profile
                     :name="auth()->user()->name"
@@ -73,6 +74,7 @@
                     </form>
                 </flux:menu>
             </flux:dropdown>
+            @endauth
         </flux:sidebar>
 
         <!-- Mobile User Menu -->
@@ -81,6 +83,7 @@
 
             <flux:spacer />
 
+            @auth
             <flux:dropdown position="top" align="end">
                 <flux:profile
                     :initials="auth()->user()->initials()"
@@ -123,6 +126,7 @@
                     </form>
                 </flux:menu>
             </flux:dropdown>
+            @endauth
         </flux:header>
 
         {{ $slot }}

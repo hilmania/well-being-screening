@@ -3,11 +3,14 @@
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
+use App\Livewire\ScreeningForm;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+Route::get('/screening', ScreeningForm::class)->name('screening');
 
 // Health check endpoint for production monitoring
 Route::get('/health', function () {
