@@ -1,8 +1,8 @@
 <div class="w-full max-w-4xl mx-auto">
     <div class="bg-white shadow-lg rounded-lg p-8">
-        <div>
+        <div class="bg-gray-50 p-6 rounded-lg">
 
-                <!-- DEBUG: Tombol Submit akan muncul di sini -->
+                {{-- <!-- DEBUG: Tombol Submit akan muncul di sini -->
                 <div style="background: red; color: white; padding: 10px; margin: 20px 0; text-align: center;">
                     DEBUG: Area tombol submit - jika Anda tidak melihat tombol di bawah ini, ada masalah rendering
                 </div>
@@ -26,7 +26,7 @@
 
                 <div style="background: green; color: white; padding: 10px; margin: 20px 0; text-align: center;">
                     DEBUG: Tombol submit sudah ditampilkan di atas
-                </div>
+                </div> --}}
             <h1 class="text-3xl font-bold text-gray-900">Screening Kesejahteraan Mental</h1>
             <p class="mt-2 text-gray-600">Silakan isi informasi dan jawab semua pertanyaan dengan jujur</p>
         </div>
@@ -134,7 +134,7 @@
                         wire:loading.attr="disabled"
                         style="min-height: 50px; display: block !important; visibility: visible !important; color: white !important;"
                     >
-                        <span wire:loading.remove style="color: white !important; display: inline !important;">
+                        <span wire:loading.remove style="color: black !important; display: inline !important;">
                             🚀 KIRIM SCREENING
                         </span>
                         <span wire:loading style="color: white !important; display: inline !important;">
