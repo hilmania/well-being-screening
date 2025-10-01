@@ -5,6 +5,7 @@ namespace App\Filament\Resources\VolunteersResponses\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use App\Models\WellBeingScreening;
 use App\Models\VolunteersResponse;
@@ -15,9 +16,33 @@ class VolunteersResponseForm
     {
         return $schema
             ->components([
+                TextInput::make('responden_name')
+                    ->label('Nama Responden')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->afterStateHydrated(function ($component, $state, $record) {
+                        if ($record && $record->screening && $record->screening->user) {
+                            $component->state($record->screening->user->name);
+                        }
+                    }),
+                TextInput::make('relawan_name')
+                    ->label('Nama Relawan')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->afterStateHydrated(function ($component, $state, $record) {
+                        if ($record && $record->volunteer) {
+                            $component->state($record->volunteer->name);
+                        }
+                    }),
                 Select::make('screening_id')
-                    ->label('Screening yang Belum Ditangani')
-                    ->options(function () {
+                    ->label('Screening')
+                    ->options(function ($record) {
+                        // Jika editing, tampilkan screening yang sedang dipilih
+                        if ($record) {
+                            return [$record->screening_id => "#{$record->screening_id} - {$record->screening->user->name} - Skor: {$record->screening->score}"];
+                        }
+
+                        // Jika creating, tampilkan screening yang belum ditangani
                         $handledScreeningIds = VolunteersResponse::pluck('screening_id')->toArray();
                         return WellBeingScreening::whereNotIn('id', $handledScreeningIds)
                             ->with('user')
@@ -35,22 +60,16 @@ class VolunteersResponseForm
                     ->searchable()
                     ->required()
                     ->helperText('Pilih screening yang belum ditangani oleh relawan')
-                    ->placeholder('Pilih screening...'),
+                    ->placeholder('Pilih screening...')
+                    ->disabled(fn ($record) => $record !== null), // Disable jika editing
                 Select::make('volunteer_id')
                     ->label('Relawan')
                     ->relationship('volunteer', 'name')
                     ->searchable()
                     ->required()
                     ->placeholder('Pilih relawan...')
-                    ->createOptionForm([
-                        \Filament\Forms\Components\TextInput::make('name')
-                            ->label('Nama')
-                            ->required(),
-                        \Filament\Forms\Components\TextInput::make('email')
-                            ->label('Email')
-                            ->email()
-                            ->required(),
-                    ]),
+                    ->disabled(fn ($record) => $record !== null) // Disable jika editing
+                    ->visible(fn ($record) => $record === null), // Hanya tampil saat creating
                 Textarea::make('notes')
                     ->label('Catatan Relawan')
                     ->rows(4)
@@ -63,6 +82,9 @@ class VolunteersResponseForm
                     ->maxSize(10240) // 10MB
                     ->helperText('Upload file CSV atau Excel. Maksimal ukuran: 10MB')
                     ->directory('volunteer-attachments')
+                    ->disk('public')
+                    ->visibility('private')
+                    ->previewable(false)
                     ->nullable()
                     ->columnSpanFull(),
             ]);

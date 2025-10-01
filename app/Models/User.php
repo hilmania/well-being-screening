@@ -71,7 +71,8 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         // Allow access for psikolog role or you can add specific logic
-        return in_array($this->role, ['psikolog', 'admin']);
+        // return in_array($this->role, ['psikolog', 'admin']);
+        return true;
     }
 
     /**

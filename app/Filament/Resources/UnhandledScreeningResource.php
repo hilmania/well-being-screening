@@ -8,6 +8,7 @@ use App\Models\User;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
+use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Actions\Action;
@@ -120,11 +121,6 @@ class UnhandledScreeningResource extends Resource
                     ->icon('heroicon-o-user-plus')
                     ->color('success')
                     ->form([
-                        Select::make('volunteer_id')
-                            ->label('Pilih Relawan')
-                            ->options(User::all()->pluck('name', 'id'))
-                            ->searchable()
-                            ->required(),
                         Textarea::make('notes')
                             ->label('Catatan')
                             ->rows(4)
@@ -136,12 +132,15 @@ class UnhandledScreeningResource extends Resource
                             ->maxSize(10240) // 10MB
                             ->helperText('Upload file CSV atau Excel. Maksimal ukuran: 10MB')
                             ->directory('volunteer-attachments')
+                            ->disk('public')
+                            ->visibility('private')
+                            ->previewable(false)
                             ->nullable(),
                     ])
                     ->action(function (WellBeingScreening $record, array $data): void {
                         VolunteersResponse::create([
                             'screening_id' => $record->id,
-                            'volunteer_id' => $data['volunteer_id'],
+                            'volunteer_id' => Auth::id(), // Menggunakan relawan yang sedang login
                             'notes' => $data['notes'],
                             'attachment' => $data['attachment'] ?? null,
                         ]);
