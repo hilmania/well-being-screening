@@ -14,6 +14,7 @@ class PsychologistResponse extends Model
         'psychologist_id',
         'diagnosis',
         'recommendation',
+        'attachment',
     ];
 
     /**
