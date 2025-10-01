@@ -9,6 +9,7 @@ use App\Filament\Resources\VolunteersResponses\Schemas\VolunteersResponseForm;
 use App\Filament\Resources\VolunteersResponses\Tables\VolunteersResponsesTable;
 use App\Models\VolunteersResponse;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -19,6 +20,14 @@ class VolunteersResponseResource extends Resource
     protected static ?string $model = VolunteersResponse::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static string | UnitEnum | null $navigationGroup = 'Responses';
+
+    protected static ?string $navigationLabel = 'Respon Relawan';
+
+    protected static ?string $modelLabel = 'Respon Relawan';
+
+    protected static ?string $pluralModelLabel = 'Respon Relawan';
 
     public static function form(Schema $schema): Schema
     {

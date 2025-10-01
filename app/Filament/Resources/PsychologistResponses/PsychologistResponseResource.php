@@ -9,6 +9,7 @@ use App\Filament\Resources\PsychologistResponses\Schemas\PsychologistResponseFor
 use App\Filament\Resources\PsychologistResponses\Tables\PsychologistResponsesTable;
 use App\Models\PsychologistResponse;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -19,6 +20,8 @@ class PsychologistResponseResource extends Resource
     protected static ?string $model = PsychologistResponse::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static string | UnitEnum | null $navigationGroup = 'Responses';
 
     public static function form(Schema $schema): Schema
     {

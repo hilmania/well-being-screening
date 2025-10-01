@@ -9,6 +9,7 @@ use App\Filament\Resources\ScreeningQuestions\Schemas\ScreeningQuestionForm;
 use App\Filament\Resources\ScreeningQuestions\Tables\ScreeningQuestionsTable;
 use App\Models\ScreeningQuestion;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -19,6 +20,8 @@ class ScreeningQuestionResource extends Resource
     protected static ?string $model = ScreeningQuestion::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static string | UnitEnum | null $navigationGroup = 'References';
 
     protected static ?string $recordTitleAttribute = 'Screening Question';
 
