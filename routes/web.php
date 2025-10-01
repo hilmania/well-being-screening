@@ -7,7 +7,7 @@ use App\Livewire\ScreeningForm;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('landing');
 })->name('home');
 
 Route::get('/screening', ScreeningForm::class)->name('screening');
