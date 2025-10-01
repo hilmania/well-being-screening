@@ -6,6 +6,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Spatie\Permission\Models\Role;
 
 class UserForm
 {
@@ -19,17 +20,21 @@ class UserForm
                     ->label('Email address')
                     ->email()
                     ->required(),
-                Select::make('role')
-                    ->options([
-                        'responden' => 'Responden',
-                        'relawan' => 'Relawan',
-                        'psikolog' => 'Psikolog',
-                    ])
-                    ->required(),
+                Select::make('roles')
+                    ->label('Role')
+                    ->multiple()
+                    ->relationship('roles', 'name')
+                    ->options(Role::all()->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->helperText('Pilih role untuk user ini')
+                    ->placeholder('Pilih role...'),
                 DateTimePicker::make('email_verified_at'),
                 TextInput::make('password')
                     ->password()
-                    ->required(),
+                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->dehydrated(fn (?string $state): bool => filled($state))
+                    ->revealable(),
             ]);
     }
 }

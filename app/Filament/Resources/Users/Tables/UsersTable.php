@@ -19,14 +19,19 @@ class UsersTable
                 TextColumn::make('email')
                     ->label('Email address')
                     ->searchable(),
-                TextColumn::make('role')
+                TextColumn::make('roles.name')
+                    ->label('Role')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'responden' => 'gray',
+                        'super_admin' => 'danger',
+                        'admin' => 'warning',
                         'relawan' => 'success',
-                        'psikolog' => 'warning',
+                        'psikolog' => 'info',
+                        'responden' => 'gray',
+                        default => 'gray',
                     })
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('email_verified_at')
                     ->dateTime()
                     ->sortable(),
