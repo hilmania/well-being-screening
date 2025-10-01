@@ -48,6 +48,16 @@ class VolunteersResponsesTable
                         }
                         return $state;
                     }),
+                TextColumn::make('attachment')
+                    ->label('Lampiran')
+                    ->formatStateUsing(function ($state) {
+                        if ($state) {
+                            $filename = basename($state);
+                            return "<a href='/storage/{$state}' target='_blank' class='text-blue-600 hover:underline'>{$filename}</a>";
+                        }
+                        return '-';
+                    })
+                    ->html(),
                 TextColumn::make('created_at')
                     ->label('Tanggal Respon')
                     ->dateTime()

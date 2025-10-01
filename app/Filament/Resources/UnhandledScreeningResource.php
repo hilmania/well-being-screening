@@ -7,6 +7,7 @@ use App\Models\VolunteersResponse;
 use App\Models\User;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Actions\Action;
@@ -129,12 +130,20 @@ class UnhandledScreeningResource extends Resource
                             ->rows(4)
                             ->placeholder('Masukkan catatan, saran, atau rekomendasi untuk klien...')
                             ->required(),
+                        FileUpload::make('attachment')
+                            ->label('Lampiran File')
+                            ->acceptedFileTypes(['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
+                            ->maxSize(10240) // 10MB
+                            ->helperText('Upload file CSV atau Excel. Maksimal ukuran: 10MB')
+                            ->directory('volunteer-attachments')
+                            ->nullable(),
                     ])
                     ->action(function (WellBeingScreening $record, array $data): void {
                         VolunteersResponse::create([
                             'screening_id' => $record->id,
                             'volunteer_id' => $data['volunteer_id'],
                             'notes' => $data['notes'],
+                            'attachment' => $data['attachment'] ?? null,
                         ]);
 
                         // Notification atau redirect bisa ditambahkan di sini

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\VolunteersResponses\Schemas;
 
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Schema;
 use App\Models\WellBeingScreening;
 use App\Models\VolunteersResponse;
@@ -55,6 +56,14 @@ class VolunteersResponseForm
                     ->rows(4)
                     ->placeholder('Masukkan catatan, saran, atau rekomendasi untuk klien...')
                     ->helperText('Berikan catatan yang membantu untuk follow-up dengan klien')
+                    ->columnSpanFull(),
+                FileUpload::make('attachment')
+                    ->label('Lampiran File')
+                    ->acceptedFileTypes(['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
+                    ->maxSize(10240) // 10MB
+                    ->helperText('Upload file CSV atau Excel. Maksimal ukuran: 10MB')
+                    ->directory('volunteer-attachments')
+                    ->nullable()
                     ->columnSpanFull(),
             ]);
     }

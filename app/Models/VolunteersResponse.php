@@ -13,6 +13,7 @@ class VolunteersResponse extends Model
         'screening_id',
         'volunteer_id',
         'notes',
+        'attachment',
     ];
 
     /**
