@@ -13,11 +13,14 @@ class RoleSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create additional roles that don't exist yet
+        // Create all required roles
+        $superAdmin = Role::firstOrCreate(['name' => 'super_admin']);
         $admin = Role::firstOrCreate(['name' => 'admin']);
+        $relawan = Role::firstOrCreate(['name' => 'relawan']);
+        $psikolog = Role::firstOrCreate(['name' => 'psikolog']);
         $responden = Role::firstOrCreate(['name' => 'responden']);
 
-        $this->command->info('Additional roles created: admin, responden');
+        $this->command->info('All roles created: super_admin, admin, relawan, psikolog, responden');
 
         // Assign roles to existing users based on their current 'role' field
         $users = \App\Models\User::whereDoesntHave('roles')->get();
