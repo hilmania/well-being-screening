@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Topoplot 4-Channel Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #preview { margin-top: 20px; }
+    img { max-width: 400px; border: 1px solid #ccc; padding: 5px; }
+    pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    .err { color: #b00020; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>Upload CSV 4 Kolom & Generate Topoplot</h2>
+  <form id="uploadForm">
+    <input type="file" id="csvFile" name="file" accept=".csv" required />
+    <br /><br />
+    <button type="submit">Generate</button>
+  </form>
+
+  <div id="preview"></div>
+
+  <script>
+    const API_URL = "http://127.0.0.1:8000/topoplot_csv_label";
+
+    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById("csvFile");
+      if (!fileInput.files.length) {
+        alert("Silakan pilih file CSV 4 kolom dahulu.");
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append("file", fileInput.files[0]);
+      fd.append("return", "base64");  // kita pakai base64 supaya bisa langsung tampil
+
+      const preview = document.getElementById("preview");
+      preview.innerHTML = "Processing...";
+
+      try {
+        const resp = await fetch(API_URL, {
+          method: "POST",
+          body: fd
+        });
+        if (!resp.ok) {
+          let errMsg = `HTTP ${resp.status}`;
+          try {
+            const j = await resp.json();
+            if (j && j.error) errMsg += `\n${j.error}`;
+          } catch (_) {}
+          throw new Error(errMsg);
+        }
+        const data = await resp.json();
+        const img = document.createElement("img");
+        img.alt = "Topoplot";
+        img.src = "data:image/png;base64," + data.image_base64;
+
+        const pre = document.createElement("pre");
+        pre.textContent = data.labeled_csv;
+
+        const dl = document.createElement("a");
+        dl.href = "data:text/csv;charset=utf-8," + encodeURIComponent(data.labeled_csv);
+        dl.download = "labeled.csv";
+        dl.textContent = "Download labeled.csv";
+
+        preview.innerHTML = "<h3>Hasil</h3>";
+        preview.appendChild(img);
+        preview.appendChild(document.createElement("br"));
+        preview.appendChild(dl);
+        preview.appendChild(document.createElement("h4")).innerText = "CSV berlabel:";
+        preview.appendChild(pre);
+
+      } catch (err) {
+        preview.innerHTML = `<div class="err"><b>Error:</b><br>${err.message}</div>`;
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
