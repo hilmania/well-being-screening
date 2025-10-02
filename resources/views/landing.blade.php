@@ -898,14 +898,204 @@
     </div>
     <!-- /.container -->
   </footer>
-  <!-- progress wrapper -->
-  <div class="progress-wrap fixed w-[2.3rem] h-[2.3rem] cursor-pointer block shadow-[inset_0_0_0_0.1rem_rgba(128,130,134,0.25)] z-[1010] opacity-0 invisible translate-y-3 transition-all duration-[0.2s] ease-[linear,margin-right] delay-[0s] rounded-[100%] right-6 bottom-6 motion-reduce:transition-none after:absolute after:content-['\e951'] after:text-center after:leading-[2.3rem] after:text-[1.2rem] after:!text-[#54a8c7] after:h-[2.3rem] after:w-[2.3rem] after:cursor-pointer after:block after:z-[1] after:transition-all after:duration-[0.2s] after:ease-linear after:left-0 after:top-0 motion-reduce:after:transition-none after:font-Unicons">
+
+  <!-- Floating Chatbot Button -->
+  <div id="chatbot-button" class="fixed w-14 h-14 !bg-blue-500 hover:!bg-blue-600 !text-white rounded-full shadow-lg cursor-pointer flex items-center justify-center z-[10000] transition-all duration-300 hover:scale-110" style="bottom: 80px; right: 24px; background-color: #3b82f6 !important; color: white !important; z-index: 10000 !important;">
+    <svg class="w-6 h-6 !text-white" fill="currentColor" viewBox="0 0 24 24" style="color: white !important;">
+      <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+    </svg>
+    <div class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse"></div>
+  </div>
+
+  <!-- Chatbot Modal/Iframe Container -->
+  <div id="chatbot-container" class="fixed bg-white rounded-lg shadow-2xl z-[9999] transition-all duration-300 transform origin-bottom-right hidden" style="bottom: 80px; right: 24px; width: 380px; height: 500px; display: none; z-index: 9999 !important;">
+    <div class="!bg-blue-500 !text-white p-3 rounded-t-lg flex justify-between items-center" style="background-color: #3b82f6 !important; color: white !important;">
+      <span class="font-semibold !text-white" style="color: white !important;">{{ $chatbotSettings['chatbot_title'] }}</span>
+      <button id="chatbot-close" class="!text-white hover:!text-gray-200 p-1 rounded transition-colors" style="color: white !important; background: rgba(255,255,255,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+        <svg class="w-5 h-5 !text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: white !important;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <iframe id="chatbot-iframe" class="w-full border-0 rounded-b-lg" style="height: calc(100% - 60px);" allow="microphone; camera"></iframe>
+  </div>  <!-- progress wrapper -->
+  {{-- <div class="progress-wrap fixed w-[2.3rem] h-[2.3rem] cursor-pointer block shadow-[inset_0_0_0_0.1rem_rgba(128,130,134,0.25)] z-[1010] opacity-0 invisible translate-y-3 transition-all duration-[0.2s] ease-[linear,margin-right] delay-[0s] rounded-[100%] right-6 bottom-6 motion-reduce:transition-none after:absolute after:content-['\e951'] after:text-center after:leading-[2.3rem] after:text-[1.2rem] after:!text-[#54a8c7] after:h-[2.3rem] after:w-[2.3rem] after:cursor-pointer after:block after:z-[1] after:transition-all after:duration-[0.2s] after:ease-linear after:left-0 after:top-0 motion-reduce:after:transition-none after:font-Unicons">
     <svg class="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
       <path class="fill-none stroke-[#54a8c7] stroke-[4] box-border transition-all duration-[0.2s] ease-linear motion-reduce:transition-none" d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98" />
     </svg>
-  </div>
+  </div> --}}
   <script src="./assets/js/plugins.js"></script>
   <script src="./assets/js/theme.js"></script>
+
+  <!-- Chatbot Script -->
+  <script>
+    let isOpen = false;
+    let iframe = null;
+    let container = null;
+    let button = null;
+
+    function initChatbot() {
+      iframe = document.getElementById('chatbot-iframe');
+      container = document.getElementById('chatbot-container');
+      button = document.getElementById('chatbot-button');
+      console.log('Chatbot initialized:', { iframe: !!iframe, container: !!container, button: !!button });
+    }
+
+    function moveButtonDown() {
+      if (button) {
+        // Move button below the chatbox (chatbox height 500px + some margin)
+        button.style.bottom = '20px';
+        button.style.transition = 'bottom 0.3s ease';
+        console.log('Button moved down');
+      }
+    }
+
+    function moveButtonUp() {
+      if (button) {
+        // Move button back to original position
+        button.style.bottom = '80px';
+        button.style.transition = 'bottom 0.3s ease';
+        console.log('Button moved up');
+      }
+    }
+
+    function openChatbot() {
+      console.log('Opening chatbot...');
+
+      if (!container || !iframe) {
+        console.error('Container or iframe not found');
+        return;
+      }
+
+      // Set iframe source if not already set
+      if (!iframe.src || iframe.src === '') {
+        const botpressUrl = '{{ $chatbotSettings['chatbot_url'] }}';
+        iframe.src = botpressUrl;
+        console.log('Iframe src set to:', botpressUrl);
+
+        // Add load event listener
+        iframe.onload = function() {
+          console.log('Iframe loaded successfully');
+        };
+
+        iframe.onerror = function() {
+          console.error('Iframe failed to load');
+        };
+      }
+
+      // Show container
+      container.style.display = 'block';
+      container.classList.remove('hidden');
+
+      // Move button down to avoid covering chat input
+      moveButtonDown();
+
+      // Add animation classes
+      setTimeout(() => {
+        container.style.opacity = '1';
+        container.style.transform = 'scale(1)';
+      }, 10);
+
+      isOpen = true;
+      console.log('Chatbot opened, visible:', !container.classList.contains('hidden'));
+    }
+
+    function closeChatbot() {
+      console.log('Closing chatbot...');
+
+      if (!container) {
+        console.error('Container not found');
+        return;
+      }
+
+      // Add closing animation
+      container.style.opacity = '0';
+      container.style.transform = 'scale(0.95)';
+
+      // Move button back up
+      moveButtonUp();
+
+      setTimeout(() => {
+        container.style.display = 'none';
+        container.classList.add('hidden');
+      }, 300);
+
+      isOpen = false;
+      console.log('Chatbot closed');
+    }
+
+    function toggleChatbot() {
+      console.log('Toggle chatbot, current state:', isOpen);
+      if (isOpen) {
+        closeChatbot();
+      } else {
+        openChatbot();
+      }
+    }
+
+    // Wait for DOM to be ready
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, setting up chatbot...');
+
+      // Initialize chatbot elements
+      initChatbot();
+
+      // Main button click
+      const button = document.getElementById('chatbot-button');
+      if (button) {
+        button.onclick = function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Main button clicked');
+          toggleChatbot();
+          return false;
+        };
+        console.log('Main button event attached');
+      } else {
+        console.error('Main button not found');
+      }
+
+      // Close button click
+      const closeBtn = document.getElementById('chatbot-close');
+      if (closeBtn) {
+        closeBtn.onclick = function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Close button clicked');
+          closeChatbot();
+          return false;
+        };
+        console.log('Close button event attached');
+      } else {
+        console.error('Close button not found');
+      }
+
+      // Click outside to close
+      document.addEventListener('click', function(e) {
+        if (isOpen && container) {
+          const button = document.getElementById('chatbot-button');
+
+          if (!container.contains(e.target) && !button.contains(e.target)) {
+            console.log('Clicked outside, closing chatbot');
+            closeChatbot();
+          }
+        }
+      });
+    });
+
+    // Auto-bounce animation after delay from settings
+    setTimeout(() => {
+      if (!isOpen) {
+        const button = document.getElementById('chatbot-button');
+        if (button) {
+          button.classList.add('animate-bounce');
+          setTimeout(() => {
+            button.classList.remove('animate-bounce');
+          }, 3000);
+        }
+      }
+    }, {{ $chatbotSettings['chatbot_auto_open_delay'] * 1000 }});
+  </script>
 </body>
 
 </html>

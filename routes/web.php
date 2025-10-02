@@ -9,9 +9,17 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use App\Models\Setting;
 
 Route::get('/', function () {
-    return view('landing');
+    $chatbotSettings = [
+        'chatbot_url' => Setting::get('chatbot_url', 'https://cdn.botpress.cloud/webchat/v3.2/shareable.html?configUrl=https://files.bpcontent.cloud/2025/09/22/15/20250922155518-LPZFIPF0.json'),
+        'chatbot_enabled' => Setting::get('chatbot_enabled', '1') === '1',
+        'chatbot_title' => Setting::get('chatbot_title', 'Assistant Kesehatan Mental'),
+        'chatbot_auto_open_delay' => Setting::get('chatbot_auto_open_delay', '5'),
+    ];
+
+    return view('landing', compact('chatbotSettings'));
 })->name('home');
 
 Route::get('/screening', ScreeningForm::class)->name('screening');
