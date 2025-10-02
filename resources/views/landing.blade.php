@@ -298,6 +298,25 @@
       <!-- /.container -->
     </section>
     <!-- /section -->
+    <section class="wrapper !bg-[#ffffff]">
+      <div class="container !py-[4.5rem] xl:!py-24 lg:!py-24 md:!py-24">
+        <div class="flex flex-wrap mx-[-15px] xl:mx-[-35px] lg:mx-[-20px] items-center">
+          <!-- Trend Chart Section -->
+          <div class="w-full flex-[0_0_auto] xl:!px-[35px] lg:!px-[20px] !px-[15px] max-w-full">
+            <div class="text-center !mb-10">
+              <h2 class="!text-[0.8rem] uppercase !text-[#5eb9f0] !mb-3 !leading-[1.35] !tracking-[0.02rem]">Tren Screening</h2>
+              <h3 class="xl:!text-[2.1rem] !text-[calc(1.335rem_+_1.02vw)] !leading-[1.2] !mb-4">Perkembangan Screening & Penanganan Bulanan</h3>
+              <p class="!mb-0 !text-[#60697b]">Lihat tren perkembangan screening dan penanganan dalam 12 bulan terakhir</p>
+            </div>
+
+            <div class="chart-container" style="position: relative; height: 400px; width: 100%;">
+              <canvas id="screeningTrendsChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="wrapper bg-gradient-reverse-sky">
       <div class="container !pb-[4.5rem] xl:!pb-24 lg:!pb-24 md:!pb-24">
         <div class="flex flex-wrap mx-[-15px] xl:mx-[-35px] lg:mx-[-20px] !mt-[-50px] items-center">
@@ -373,116 +392,65 @@
       <div class="container pt-14 xl:pt-8 lg:pt-8 pb-[4.5rem] xl:pb-24 lg:pb-24 md:pb-24">
         <div class="flex flex-wrap mx-[-15px] xl:mx-[-35px] lg:mx-[-20px] !mt-[-50px] xl:!mt-0 lg:!mt-0 !mb-12">
           <div class="xl:w-4/12 lg:w-4/12 w-full flex-[0_0_auto] !px-[15px] max-w-full text-center lg:text-left xl:text-left xl:!px-[35px] lg:!px-[20px] !mt-[50px] xl:!mt-0 lg:!mt-0">
-            <h2 class="!text-[0.8rem] uppercase !text-[#5eb9f0] !mb-3 !leading-[1.35] !tracking-[0.02rem]">Company Facts</h2>
-            <h3 class="xl:!text-[2.1rem] !text-[calc(1.335rem_+_1.02vw)] !leading-[1.2] !mb-4 xxl:!pr-5">We are proud of our design team</h3>
-            <p class="!mb-0 xxl:!pr-12">Just sit back and relax while we take care of your business needs for you.</p>
+            <h2 class="!text-[0.8rem] uppercase !text-[#5eb9f0] !mb-3 !leading-[1.35] !tracking-[0.02rem]">Statistik Platform</h2>
+            <h3 class="xl:!text-[2.1rem] !text-[calc(1.335rem_+_1.02vw)] !leading-[1.2] !mb-4 xxl:!pr-5">Data Screening & Penanganan</h3>
+            <p class="!mb-0 xxl:!pr-12">Lihat perkembangan terkini dari platform screening kesehatan mental kami.</p>
           </div>
           <!-- /column -->
           <div class="xl:w-8/12 lg:w-8/12 w-full flex-[0_0_auto] !px-[15px] max-w-full xl:!px-[35px] lg:!px-[20px] !mt-[50px] xl:!mt-2 lg:!mt-2">
-            <div class="flex flex-wrap mx-[-15px] items-center counter-wrapper !mt-[-30px] !text-center">
-              <div class="xl:w-4/12 lg:w-4/12 md:w-4/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
-                <div class="icon btn btn-circle btn-lg btn-soft-sky pointer-events-none !mb-4 xl:!text-[1.3rem] w-12 h-12 !text-[calc(1.255rem_+_0.06vw)] !inline-flex !items-center !justify-center !leading-none !p-0 !rounded-[100%]"> <i class="uil uil-presentation-check before:content-['\ec66']"></i> </div>
-                <h3 class="counter xl:!text-[2rem] !text-[calc(1.325rem_+_0.9vw)] !tracking-[normal] !leading-none !mb-2">1000+</h3>
-                <p class="!font-medium !mb-0">Completed Projects</p>
+            <div class="flex flex-wrap mx-[-15px] items-start !mt-[-30px]">
+              <!-- Donut Charts Section -->
+              <div class="xl:w-7/12 lg:w-7/12 md:w-7/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
+                <div class="text-center">
+                  <h4 class="!text-[1.2rem] !font-medium !mb-6 !text-[#60697b]">Distribusi Status Penanganan</h4>
+                  <div class="chart-container" style="position: relative; height: 350px; width: 100%; max-width: 400px; margin: 0 auto;">
+                    <canvas id="statusDistributionChart"></canvas>
+                  </div>
+                </div>
               </div>
-              <!--/column -->
-              <div class="xl:w-4/12 lg:w-4/12 md:w-4/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
-                <div class="icon btn btn-circle btn-lg btn-soft-sky pointer-events-none !mb-4 xl:!text-[1.3rem] w-12 h-12 !text-[calc(1.255rem_+_0.06vw)] !inline-flex !items-center !justify-center !leading-none !p-0 !rounded-[100%]"> <i class="uil uil-user-check before:content-['\ed65']"></i> </div>
-                <h3 class="counter xl:!text-[2rem] !text-[calc(1.325rem_+_0.9vw)] !tracking-[normal] !leading-none !mb-2">50K+</h3>
-                <p class="!font-medium !mb-0">Happy Customers</p>
+
+              <!-- Stats Cards -->
+              <div class="xl:w-5/12 lg:w-5/12 md:w-5/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
+                <div class="space-y-4">
+                  <div class="text-center !p-3 !bg-gray-50 !rounded-lg">
+                    <div class="icon btn btn-circle btn-md btn-soft-sky pointer-events-none !mb-2 xl:!text-[1.1rem] w-8 h-8 !text-[calc(1.155rem_+_0.04vw)] !inline-flex !items-center !justify-center !leading-none !p-0 !rounded-[100%]">
+                      <i class="uil uil-users-alt before:content-['\ed6b']"></i>
+                    </div>
+                    <h3 class="counter xl:!text-[1.6rem] !text-[calc(1.225rem_+_0.6vw)] !tracking-[normal] !leading-none !mb-1">{{ $chartData['stats']['total_responden'] }}</h3>
+                    <p class="!font-medium !mb-0 !text-xs">Total Responden</p>
+                  </div>
+
+                  <div class="text-center !p-3 !bg-gray-50 !rounded-lg">
+                    <div class="icon btn btn-circle btn-md btn-soft-green pointer-events-none !mb-2 xl:!text-[1.1rem] w-8 h-8 !text-[calc(1.155rem_+_0.04vw)] !inline-flex !items-center !justify-center !leading-none !p-0 !rounded-[100%]">
+                      <i class="uil uil-check-circle before:content-['\eab8']"></i>
+                    </div>
+                    <h3 class="counter xl:!text-[1.6rem] !text-[calc(1.225rem_+_0.6vw)] !tracking-[normal] !leading-none !mb-1">{{ $chartData['stats']['ditangani_relawan'] }}</h3>
+                    <p class="!font-medium !mb-0 !text-xs">Ditangani Relawan</p>
+                  </div>
+
+                  <div class="text-center !p-3 !bg-gray-50 !rounded-lg">
+                    <div class="icon btn btn-circle btn-md btn-soft-orange pointer-events-none !mb-2 xl:!text-[1.1rem] w-8 h-8 !text-[calc(1.155rem_+_0.04vw)] !inline-flex !items-center !justify-center !leading-none !p-0 !rounded-[100%]">
+                      <i class="uil uil-graduation-cap before:content-['\eb23']"></i>
+                    </div>
+                    <h3 class="counter xl:!text-[1.6rem] !text-[calc(1.225rem_+_0.6vw)] !tracking-[normal] !leading-none !mb-1">{{ $chartData['stats']['ditangani_psikolog'] }}</h3>
+                    <p class="!font-medium !mb-0 !text-xs">Ditangani Psikolog</p>
+                  </div>
+
+                  <div class="text-center !p-3 !bg-gray-50 !rounded-lg">
+                    <div class="icon btn btn-circle btn-md btn-soft-blue pointer-events-none !mb-2 xl:!text-[1.1rem] w-8 h-8 !text-[calc(1.155rem_+_0.04vw)] !inline-flex !items-center !justify-center !leading-none !p-0 !rounded-[100%]">
+                      <i class="uil uil-clipboard-notes before:content-['\eab0']"></i>
+                    </div>
+                    <h3 class="counter xl:!text-[1.6rem] !text-[calc(1.225rem_+_0.6vw)] !tracking-[normal] !leading-none !mb-1">{{ $chartData['stats']['total_screening'] }}</h3>
+                    <p class="!font-medium !mb-0 !text-xs">Total Screening</p>
+                  </div>
+                </div>
               </div>
-              <!--/column -->
-              <div class="xl:w-4/12 lg:w-4/12 md:w-4/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
-                <div class="icon btn btn-circle btn-lg btn-soft-sky pointer-events-none !mb-4 xl:!text-[1.3rem] w-12 h-12 !text-[calc(1.255rem_+_0.06vw)] !inline-flex !items-center !justify-center !leading-none !p-0 !rounded-[100%]"> <i class="uil uil-trophy before:content-['\ed4f']"></i> </div>
-                <h3 class="counter xl:!text-[2rem] !text-[calc(1.325rem_+_0.9vw)] !tracking-[normal] !leading-none !mb-2">20+</h3>
-                <p class="!font-medium !mb-0">Awards Won</p>
-              </div>
-              <!--/column -->
             </div>
             <!--/.row -->
           </div>
           <!-- /column -->
         </div>
         <!-- /.row -->
-        <div class="flex flex-wrap mx-[-15px] grid-view !mt-[-30px] xl:!mt-0">
-          <div class="md:w-6/12 lg:w-6/12 xl:w-3/12 w-full flex-[0_0_auto] !px-[15px] !mt-[30px] xl:!mt-0 max-w-full">
-            <div class="card !shadow-[0_0.25rem_1.75rem_rgba(30,34,40,0.07)]">
-              <div class="card-body flex-[1_1_auto] p-[40px]">
-                <img class="rounded-[50%] !w-[5rem] !mb-4" src="./assets/img/avatars/te1.jpg" srcset="./assets/img/avatars/te1@2x.jpg 2x" alt="image">
-                <h4 class="!mb-1">Coriss Ambady</h4>
-                <div class="!text-[.7rem] uppercase !tracking-[0.02rem] font-semibold !text-[#aab0bc] !mb-2">Financial Analyst</div>
-                <p class="!mb-2">Fermentum massa justo sit amet risus morbi leo.</p>
-                <nav class="nav social !mb-0">
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-twitter before:content-['\ed59'] text-[1rem] !text-[#5daed5]"></i></a>
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-facebook-f before:content-['\eae2'] text-[1rem] !text-[#4470cf]"></i></a>
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-dribbble before:content-['\eaa2'] text-[1rem] !text-[#e94d88]"></i></a>
-                </nav>
-                <!-- /.social -->
-              </div>
-              <!--/.card-body -->
-            </div>
-            <!-- /.card -->
-          </div>
-          <!--/column -->
-          <div class="md:w-6/12 lg:w-6/12 xl:w-3/12 w-full flex-[0_0_auto] !px-[15px] !mt-[30px] xl:!mt-0 max-w-full">
-            <div class="card !shadow-[0_0.25rem_1.75rem_rgba(30,34,40,0.07)]">
-              <div class="card-body flex-[1_1_auto] p-[40px]">
-                <img class="rounded-[50%] !w-[5rem] !mb-4" src="./assets/img/avatars/te2.jpg" srcset="./assets/img/avatars/te2@2x.jpg 2x" alt="image">
-                <h4 class="!mb-1">Cory Zamora</h4>
-                <div class="!text-[.7rem] uppercase !tracking-[0.02rem] font-semibold !text-[#aab0bc] !mb-2">Marketing Specialist</div>
-                <p class="!mb-2">Fermentum massa justo sit amet risus morbi leo.</p>
-                <nav class="nav social !mb-0">
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-twitter before:content-['\ed59'] text-[1rem] !text-[#5daed5]"></i></a>
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-facebook-f before:content-['\eae2'] text-[1rem] !text-[#4470cf]"></i></a>
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-dribbble before:content-['\eaa2'] text-[1rem] !text-[#e94d88]"></i></a>
-                </nav>
-                <!-- /.social -->
-              </div>
-              <!--/.card-body -->
-            </div>
-            <!-- /.card -->
-          </div>
-          <!--/column -->
-          <div class="md:w-6/12 lg:w-6/12 xl:w-3/12 w-full flex-[0_0_auto] !px-[15px] !mt-[30px] xl:!mt-0 max-w-full">
-            <div class="card !shadow-[0_0.25rem_1.75rem_rgba(30,34,40,0.07)]">
-              <div class="card-body flex-[1_1_auto] p-[40px]">
-                <img class="rounded-[50%] !w-[5rem] !mb-4" src="./assets/img/avatars/te3.jpg" srcset="./assets/img/avatars/te3@2x.jpg 2x" alt="image">
-                <h4 class="!mb-1">Nikolas Brooten</h4>
-                <div class="!text-[.7rem] uppercase !tracking-[0.02rem] font-semibold !text-[#aab0bc] !mb-2">Sales Manager</div>
-                <p class="!mb-2">Fermentum massa justo sit amet risus morbi leo.</p>
-                <nav class="nav social !mb-0">
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-twitter before:content-['\ed59'] text-[1rem] !text-[#5daed5]"></i></a>
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-facebook-f before:content-['\eae2'] text-[1rem] !text-[#4470cf]"></i></a>
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-dribbble before:content-['\eaa2'] text-[1rem] !text-[#e94d88]"></i></a>
-                </nav>
-                <!-- /.social -->
-              </div>
-              <!--/.card-body -->
-            </div>
-            <!-- /.card -->
-          </div>
-          <!--/column -->
-          <div class="md:w-6/12 lg:w-6/12 xl:w-3/12 w-full flex-[0_0_auto] !px-[15px] !mt-[30px] xl:!mt-0 max-w-full">
-            <div class="card !shadow-[0_0.25rem_1.75rem_rgba(30,34,40,0.07)]">
-              <div class="card-body flex-[1_1_auto] p-[40px]">
-                <img class="rounded-[50%] !w-[5rem] !mb-4" src="./assets/img/avatars/te4.jpg" srcset="./assets/img/avatars/te4@2x.jpg 2x" alt="image">
-                <h4 class="!mb-1">Jackie Sanders</h4>
-                <div class="!text-[.7rem] uppercase !tracking-[0.02rem] font-semibold !text-[#aab0bc] !mb-2">Investment Planner</div>
-                <p class="!mb-2">Fermentum massa justo sit amet risus morbi leo.</p>
-                <nav class="nav social !mb-0">
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-twitter before:content-['\ed59'] text-[1rem] !text-[#5daed5]"></i></a>
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-facebook-f before:content-['\eae2'] text-[1rem] !text-[#4470cf]"></i></a>
-                  <a class="m-[0_.7rem_0_0] text-[1rem] transition-all duration-[0.2s] ease-in-out translate-y-0 hover:translate-y-[-0.15rem]" href="#"><i class="uil uil-dribbble before:content-['\eaa2'] text-[1rem] !text-[#e94d88]"></i></a>
-                </nav>
-                <!-- /.social -->
-              </div>
-              <!--/.card-body -->
-            </div>
-            <!-- /.card -->
-          </div>
-          <!--/column -->
-        </div>
-        <!--/.row -->
       </div>
       <!-- /.container -->
       <div class="overflow-hidden">
@@ -595,132 +563,6 @@
             <h3 class="xl:!text-[2.1rem] !text-[calc(1.335rem_+_1.02vw)] !leading-[1.2] !mb-10 xxl:!px-10">Jangan hanya percaya kata kami. Lihat apa yang dikatakan klien tentang layanan kami.</h3>
           </div>
           <!-- /column -->
-        </div>
-        <!-- /.row -->
-        <div class="itemgrid">
-          <div class="flex flex-wrap mx-[-15px] isotope !mt-[-30px]">
-            <div class="item md:w-6/12 lg:w-6/12 xl:w-4/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
-              <div class="card !shadow-[0_0.25rem_1.75rem_rgba(30,34,40,0.07)]">
-                <div class="card-body flex-[1_1_auto] p-[40px]">
-                  <span class="ratings  inline-block relative w-20 h-[0.8rem] text-[0.9rem] leading-none before:text-[rgba(38,43,50,0.1)] after:inline-block after:not-italic after:font-normal after:absolute after:!text-[#fcc032] after:content-['\2605\2605\2605\2605\2605'] after:overflow-hidden after:left-0 after:top-0 before:inline-block before:not-italic before:font-normal before:absolute before:!text-[#fcc032] before:content-['\2605\2605\2605\2605\2605'] before:overflow-hidden before:left-0 before:top-0 five !mb-2"></span>
-                  <blockquote class="!text-[.9rem] !leading-[1.7] font-medium !pl-4 icon !mb-0 relative p-0 border-0">
-                    <p>“Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Vestibulum id ligula porta felis euismod semper. Cras justo odio dapibus facilisis sociis natoque penatibus.”</p>
-                    <div class="flex items-center text-left">
-                      <img class="!rounded-[50%] !w-[3.5rem]" src="./assets/img/avatars/te1.jpg" srcset="./assets/img/avatars/te1@2x.jpg 2x" alt="image">
-                      <div class="info !pl-4">
-                        <h5 class="!mb-1 !text-[0.95rem] !leading-[1.5] !tracking-[-0.01rem]">Coriss Ambady</h5>
-                        <p class="!mb-0 !text-[.85rem]">Financial Analyst</p>
-                      </div>
-                    </div>
-                  </blockquote>
-                </div>
-                <!-- /.card-body -->
-              </div>
-              <!-- /.card -->
-            </div>
-            <!--/column -->
-            <div class="item md:w-6/12 lg:w-6/12 xl:w-4/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
-              <div class="card !shadow-[0_0.25rem_1.75rem_rgba(30,34,40,0.07)]">
-                <div class="card-body flex-[1_1_auto] p-[40px]">
-                  <span class="ratings  inline-block relative w-20 h-[0.8rem] text-[0.9rem] leading-none before:text-[rgba(38,43,50,0.1)] after:inline-block after:not-italic after:font-normal after:absolute after:!text-[#fcc032] after:content-['\2605\2605\2605\2605\2605'] after:overflow-hidden after:left-0 after:top-0 before:inline-block before:not-italic before:font-normal before:absolute before:!text-[#fcc032] before:content-['\2605\2605\2605\2605\2605'] before:overflow-hidden before:left-0 before:top-0 five !mb-2"></span>
-                  <blockquote class="!text-[.9rem] !leading-[1.7] font-medium !pl-4 icon !mb-0 relative p-0 border-0">
-                    <p>“Fusce dapibus, tellus ac cursus tortor mauris condimentum fermentum massa justo sit amet. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed.”</p>
-                    <div class="flex items-center text-left">
-                      <img class="!rounded-[50%] !w-[3.5rem]" src="./assets/img/avatars/te2.jpg" srcset="./assets/img/avatars/te2@2x.jpg 2x" alt="image">
-                      <div class="info !pl-4">
-                        <h5 class="!mb-1 !text-[0.95rem] !leading-[1.5] !tracking-[-0.01rem]">Cory Zamora</h5>
-                        <p class="!mb-0 !text-[.85rem]">Marketing Specialist</p>
-                      </div>
-                    </div>
-                  </blockquote>
-                </div>
-                <!-- /.card-body -->
-              </div>
-              <!-- /.card -->
-            </div>
-            <!--/column -->
-            <div class="item md:w-6/12 lg:w-6/12 xl:w-4/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
-              <div class="card !shadow-[0_0.25rem_1.75rem_rgba(30,34,40,0.07)]">
-                <div class="card-body flex-[1_1_auto] p-[40px]">
-                  <span class="ratings  inline-block relative w-20 h-[0.8rem] text-[0.9rem] leading-none before:text-[rgba(38,43,50,0.1)] after:inline-block after:not-italic after:font-normal after:absolute after:!text-[#fcc032] after:content-['\2605\2605\2605\2605\2605'] after:overflow-hidden after:left-0 after:top-0 before:inline-block before:not-italic before:font-normal before:absolute before:!text-[#fcc032] before:content-['\2605\2605\2605\2605\2605'] before:overflow-hidden before:left-0 before:top-0 five !mb-2"></span>
-                  <blockquote class="!text-[.9rem] !leading-[1.7] font-medium !pl-4 icon !mb-0 relative p-0 border-0">
-                    <p>“Curabitur blandit tempus porttitor. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Nullam quis risus eget porta ac consectetur vestibulum. Donec sed odio dui consectetur adipiscing elit.”</p>
-                    <div class="flex items-center text-left">
-                      <img class="!rounded-[50%] !w-[3.5rem]" src="./assets/img/avatars/te3.jpg" srcset="./assets/img/avatars/te3@2x.jpg 2x" alt="image">
-                      <div class="info !pl-4">
-                        <h5 class="!mb-1 !text-[0.95rem] !leading-[1.5] !tracking-[-0.01rem]">Nikolas Brooten</h5>
-                        <p class="!mb-0 !text-[.85rem]">Sales Manager</p>
-                      </div>
-                    </div>
-                  </blockquote>
-                </div>
-                <!-- /.card-body -->
-              </div>
-              <!-- /.card -->
-            </div>
-            <!--/column -->
-            <div class="item md:w-6/12 lg:w-6/12 xl:w-4/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
-              <div class="card !shadow-[0_0.25rem_1.75rem_rgba(30,34,40,0.07)]">
-                <div class="card-body flex-[1_1_auto] p-[40px]">
-                  <span class="ratings  inline-block relative w-20 h-[0.8rem] text-[0.9rem] leading-none before:text-[rgba(38,43,50,0.1)] after:inline-block after:not-italic after:font-normal after:absolute after:!text-[#fcc032] after:content-['\2605\2605\2605\2605\2605'] after:overflow-hidden after:left-0 after:top-0 before:inline-block before:not-italic before:font-normal before:absolute before:!text-[#fcc032] before:content-['\2605\2605\2605\2605\2605'] before:overflow-hidden before:left-0 before:top-0 five !mb-2"></span>
-                  <blockquote class="!text-[.9rem] !leading-[1.7] font-medium !pl-4 icon !mb-0 relative p-0 border-0">
-                    <p>“Etiam adipiscing tincidunt elit convallis felis suscipit ut. Phasellus rhoncus tincidunt auctor. Nullam eu sagittis mauris. Donec non dolor ac elit aliquam tincidunt at at sapien. Aenean tortor libero condimentum ac laoreet vitae.”</p>
-                    <div class="flex items-center text-left">
-                      <img class="!rounded-[50%] !w-[3.5rem]" src="./assets/img/avatars/te4.jpg" srcset="./assets/img/avatars/te4@2x.jpg 2x" alt="image">
-                      <div class="info !pl-4">
-                        <h5 class="!mb-1 !text-[0.95rem] !leading-[1.5] !tracking-[-0.01rem]">Coriss Ambady</h5>
-                        <p class="!mb-0 !text-[.85rem]">Financial Analyst</p>
-                      </div>
-                    </div>
-                  </blockquote>
-                </div>
-                <!-- /.card-body -->
-              </div>
-              <!-- /.card -->
-            </div>
-            <!--/column -->
-            <div class="item md:w-6/12 lg:w-6/12 xl:w-4/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
-              <div class="card !shadow-[0_0.25rem_1.75rem_rgba(30,34,40,0.07)]">
-                <div class="card-body flex-[1_1_auto] p-[40px]">
-                  <span class="ratings  inline-block relative w-20 h-[0.8rem] text-[0.9rem] leading-none before:text-[rgba(38,43,50,0.1)] after:inline-block after:not-italic after:font-normal after:absolute after:!text-[#fcc032] after:content-['\2605\2605\2605\2605\2605'] after:overflow-hidden after:left-0 after:top-0 before:inline-block before:not-italic before:font-normal before:absolute before:!text-[#fcc032] before:content-['\2605\2605\2605\2605\2605'] before:overflow-hidden before:left-0 before:top-0 five !mb-2"></span>
-                  <blockquote class="!text-[.9rem] !leading-[1.7] font-medium !pl-4 icon !mb-0 relative p-0 border-0">
-                    <p>“Maecenas sed diam eget risus varius blandit sit amet non magna. Cum sociis natoque penatibus magnis dis montes, nascetur ridiculus mus. Donec sed odio dui. Nulla vitae elit libero.”</p>
-                    <div class="flex items-center text-left">
-                      <img class="!rounded-[50%] !w-[3.5rem]" src="./assets/img/avatars/te5.jpg" srcset="./assets/img/avatars/te5@2x.jpg 2x" alt="image">
-                      <div class="info !pl-4">
-                        <h5 class="!mb-1 !text-[0.95rem] !leading-[1.5] !tracking-[-0.01rem]">Jackie Sanders</h5>
-                        <p class="!mb-0 !text-[.85rem]">Investment Planner</p>
-                      </div>
-                    </div>
-                  </blockquote>
-                </div>
-                <!-- /.card-body -->
-              </div>
-              <!-- /.card -->
-            </div>
-            <!--/column -->
-            <div class="item md:w-6/12 lg:w-6/12 xl:w-4/12 w-full flex-[0_0_auto] !px-[15px] max-w-full !mt-[30px]">
-              <div class="card !shadow-[0_0.25rem_1.75rem_rgba(30,34,40,0.07)]">
-                <div class="card-body flex-[1_1_auto] p-[40px]">
-                  <span class="ratings  inline-block relative w-20 h-[0.8rem] text-[0.9rem] leading-none before:text-[rgba(38,43,50,0.1)] after:inline-block after:not-italic after:font-normal after:absolute after:!text-[#fcc032] after:content-['\2605\2605\2605\2605\2605'] after:overflow-hidden after:left-0 after:top-0 before:inline-block before:not-italic before:font-normal before:absolute before:!text-[#fcc032] before:content-['\2605\2605\2605\2605\2605'] before:overflow-hidden before:left-0 before:top-0 five !mb-2"></span>
-                  <blockquote class="!text-[.9rem] !leading-[1.7] font-medium !pl-4 icon !mb-0 relative p-0 border-0">
-                    <p>“Donec id elit non mi porta gravida at eget metus. Nulla vitae elit libero, a pharetra augue. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.”</p>
-                    <div class="flex items-center text-left">
-                      <img class="!rounded-[50%] !w-[3.5rem]" src="./assets/img/avatars/te6.jpg" srcset="./assets/img/avatars/te6@2x.jpg 2x" alt="image">
-                      <div class="info !pl-4">
-                        <h5 class="!mb-1 !text-[0.95rem] !leading-[1.5] !tracking-[-0.01rem]">Laura Widerski</h5>
-                        <p class="!mb-0 !text-[.85rem]">Sales Specialist</p>
-                      </div>
-                    </div>
-                  </blockquote>
-                </div>
-                <!-- /.card-body -->
-              </div>
-              <!-- /.card -->
-            </div>
-            <!--/column -->
-          </div>
-          <!-- /.row -->
         </div>
         <!-- /.grid-view -->
       </div>
@@ -1095,6 +937,158 @@
         }
       }
     }, {{ $chatbotSettings['chatbot_auto_open_delay'] * 1000 }});
+  </script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Donut Chart Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Status Distribution Donut Chart
+      const ctx = document.getElementById('statusDistributionChart').getContext('2d');
+
+      const chartData = @json($chartData['distribution']);
+
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: chartData.labels,
+          datasets: [{
+            data: chartData.data,
+            backgroundColor: chartData.colors,
+            borderWidth: 2,
+            borderColor: '#ffffff',
+            hoverBorderWidth: 3,
+            hoverBorderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                font: {
+                  size: 12,
+                  family: "'Inter', sans-serif"
+                },
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((context.raw / total) * 100).toFixed(1);
+                  return context.label + ': ' + context.raw + ' (' + percentage + '%)';
+                }
+              },
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#ffffff',
+              bodyColor: '#ffffff',
+              borderColor: '#ffffff',
+              borderWidth: 1
+            }
+          },
+          cutout: '60%',
+          elements: {
+            arc: {
+              borderRadius: 4
+            }
+          }
+        }
+      });
+
+      // Screening Trends Line Chart
+      const trendsCtx = document.getElementById('screeningTrendsChart').getContext('2d');
+
+      const trendsData = @json($chartData['trends']);
+
+      new Chart(trendsCtx, {
+        type: 'line',
+        data: {
+          labels: trendsData.labels,
+          datasets: trendsData.datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                padding: 20,
+                font: {
+                  size: 12,
+                  family: "'Inter', sans-serif"
+                },
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#ffffff',
+              bodyColor: '#ffffff',
+              borderColor: '#ffffff',
+              borderWidth: 1,
+              cornerRadius: 6,
+              displayColors: true
+            }
+          },
+          scales: {
+            x: {
+              display: true,
+              grid: {
+                display: true,
+                color: 'rgba(0, 0, 0, 0.1)'
+              },
+              ticks: {
+                font: {
+                  size: 11
+                }
+              }
+            },
+            y: {
+              display: true,
+              beginAtZero: true,
+              grid: {
+                display: true,
+                color: 'rgba(0, 0, 0, 0.1)'
+              },
+              ticks: {
+                font: {
+                  size: 11
+                },
+                callback: function(value) {
+                  return Math.floor(value);
+                }
+              }
+            }
+          },
+          elements: {
+            line: {
+              tension: 0.4,
+              borderWidth: 2
+            },
+            point: {
+              radius: 4,
+              hoverRadius: 6,
+              borderWidth: 2,
+              backgroundColor: '#ffffff'
+            }
+          }
+        }
+      });
+    });
   </script>
 </body>
 
