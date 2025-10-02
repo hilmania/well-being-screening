@@ -154,30 +154,81 @@ php artisan vendor:publish --tag="filament-shield-migrations"
 php artisan migrate
 ```
 
-### 9. Create Super Admin
+### 9. Create Filament Admin User
+
+#### Opsi 1: Menggunakan Filament Command (Recommended)
 
 ```bash
-# Buat user super admin
+# Buat user admin untuk mengakses panel Filament
 php artisan make:filament-user
+```
 
-# Atau gunakan tinker untuk assign role
+**Command ini akan meminta input:**
+- **Name**: Masukkan nama lengkap (misal: "Super Administrator")
+- **Email**: Masukkan email admin (misal: "admin@yourdomain.com")
+- **Password**: Masukkan password yang kuat
+
+**Setelah user dibuat, assign role super_admin:**
+
+```bash
 php artisan tinker
 ```
 
 **Di dalam tinker:**
 ```php
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 
-// Buat atau ambil user
-$user = User::find(1); // atau User::where('email', 'admin@example.com')->first();
+// Ambil user yang baru dibuat
+$user = User::where('email', 'admin@yourdomain.com')->first();
 
 // Assign role super_admin
 $user->assignRole('super_admin');
 
-// Verifikasi
-$user->roles; // Seharusnya menampilkan super_admin
+// Verifikasi role
+echo "User: " . $user->name . " has roles: " . $user->roles->pluck('name')->join(', ');
+
 exit;
+```
+
+#### Opsi 2: Membuat User Manual dengan Tinker
+
+```bash
+php artisan tinker
+```
+
+**Di dalam tinker:**
+```php
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+// Buat user baru
+$user = User::create([
+    'name' => 'Super Administrator',
+    'email' => 'admin@yourdomain.com',
+    'password' => Hash::make('your-secure-password'),
+    'email_verified_at' => now(),
+]);
+
+// Assign role super_admin
+$user->assignRole('super_admin');
+
+echo "Admin user created successfully!";
+echo "Email: " . $user->email;
+echo "Role: " . $user->roles->pluck('name')->join(', ');
+
+exit;
+```
+
+#### Opsi 3: Menggunakan Database Seeder (Development)
+
+User admin sudah otomatis dibuat melalui `DatabaseSeeder` dengan credentials:
+- **Email**: `admin@example.com`
+- **Password**: `password` (default dari factory)
+- **Role**: `super_admin`
+
+**Akses Admin Panel:**
+- URL: `https://yourdomain.com/admin`
+- Login dengan credentials admin yang telah dibuat
 ```
 
 ### 10. Cache Optimization
