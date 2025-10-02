@@ -23,12 +23,17 @@ class UserForm
                 Select::make('roles')
                     ->label('Role')
                     ->multiple()
-                    ->relationship('roles', 'name')
-                    ->options(Role::all()->pluck('name', 'id'))
+                    ->options(function () {
+                        return Role::all()->pluck('name', 'name');
+                    })
+                    ->default(function ($record) {
+                        return $record ? $record->roles->pluck('name')->toArray() : [];
+                    })
                     ->searchable()
                     ->preload()
                     ->helperText('Pilih role untuk user ini')
-                    ->placeholder('Pilih role...'),
+                    ->placeholder('Pilih role...')
+                    ->dehydrated(false), // Prevent auto-save, handled manually
                 DateTimePicker::make('email_verified_at'),
                 TextInput::make('password')
                     ->password()
