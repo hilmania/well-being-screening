@@ -117,7 +117,7 @@ EXIT;
 # Jalankan migrasi
 php artisan migrate
 
-# Jalankan seeder (opsional, untuk data dummy)
+# Jalankan seeder (WAJIB - includes default settings untuk chatbot)
 php artisan db:seed
 ```
 
@@ -406,6 +406,48 @@ tar -czf /backups/files_backup_$DATE.tar.gz /path/to/your/app/storage
 # Add to crontab for daily backup
 0 2 * * * /path/to/backup-script.sh
 ```
+
+## Configuration Management
+
+### Chatbot Settings
+
+Aplikasi menggunakan sistem dynamic settings yang dapat dikonfigurasi melalui admin panel tanpa perlu mengubah kode.
+
+#### Default Settings (Otomatis ter-load via SettingSeeder):
+
+| Setting | Default Value | Type | Description |
+|---------|---------------|------|-------------|
+| `chatbot_url` | Botpress URL | URL | URL integrasi chatbot Botpress |
+| `chatbot_enabled` | true | Boolean | Enable/disable chatbot di website |
+| `chatbot_title` | "Assistant Kesehatan Mental" | Text | Judul header chatbot |
+| `chatbot_auto_open_delay` | 5 | Number | Delay bounce animation (detik) |
+
+#### Mengubah Settings via Admin Panel:
+
+1. **Login ke admin panel**: `/admin`
+2. **Navigate ke "Settings"** di sidebar
+3. **Edit setting yang diperlukan**:
+   - **Chatbot URL**: Ganti dengan URL Botpress yang baru
+   - **Chatbot Title**: Ubah judul header chatbot
+   - **Auto Open Delay**: Atur delay animasi bounce
+4. **Save changes** - Perubahan langsung berlaku di website
+
+#### Manual Setting via Database:
+
+```php
+use App\Models\Setting;
+
+// Update chatbot URL
+Setting::set('chatbot_url', 'https://your-new-botpress-url.com');
+
+// Update chatbot title
+Setting::set('chatbot_title', 'AI Assistant Baru');
+
+// Disable chatbot
+Setting::set('chatbot_enabled', '0');
+```
+
+⚠️ **PENTING**: Pastikan `php artisan db:seed` sudah dijalankan agar default settings ter-load dengan benar.
 
 ## Troubleshooting
 
