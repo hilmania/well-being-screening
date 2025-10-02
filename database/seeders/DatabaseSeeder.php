@@ -49,6 +49,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             ScreeningQuestionSeeder::class,
+            SampleDataSeeder::class, // Seeder untuk data sample testing
         ]);
     }
 }
