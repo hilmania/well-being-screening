@@ -14,7 +14,7 @@ class MixedScreeningQuestionSeeder extends Seeder
     public function run(): void
     {
         // Hapus semua pertanyaan yang ada
-        ScreeningQuestion::truncate();
+        // ScreeningQuestion::truncate();
 
         $questions = [
             // Grup: Assessment Dasar
