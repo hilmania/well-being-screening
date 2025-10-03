@@ -5,6 +5,7 @@ namespace App\Filament\Resources\WellBeingScreenings;
 use App\Filament\Resources\WellBeingScreenings\Pages\CreateWellBeingScreening;
 use App\Filament\Resources\WellBeingScreenings\Pages\EditWellBeingScreening;
 use App\Filament\Resources\WellBeingScreenings\Pages\ListWellBeingScreenings;
+use App\Filament\Resources\WellBeingScreenings\Pages\ViewWellBeingScreening;
 use App\Filament\Resources\WellBeingScreenings\Schemas\WellBeingScreeningForm;
 use App\Filament\Resources\WellBeingScreenings\Tables\WellBeingScreeningsTable;
 use App\Models\WellBeingScreening;
@@ -42,6 +43,7 @@ class WellBeingScreeningResource extends Resource
         return [
             'index' => ListWellBeingScreenings::route('/'),
             'create' => CreateWellBeingScreening::route('/create'),
+            'view' => ViewWellBeingScreening::route('/{record}'),
             'edit' => EditWellBeingScreening::route('/{record}/edit'),
         ];
     }

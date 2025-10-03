@@ -21,7 +21,7 @@ class ScreeningForm extends Component
     protected $rules = [
         'name' => 'required|min:2|max:255',
         'email' => 'required|email|max:255',
-        'answers.*' => 'required|integer|min:1|max:5',
+        'answers.*' => 'required',
     ];
 
     protected $messages = [
@@ -29,21 +29,37 @@ class ScreeningForm extends Component
         'email.required' => 'Email harus diisi.',
         'email.email' => 'Email tidak valid.',
         'answers.*.required' => 'Semua pertanyaan harus dijawab.',
-        'answers.*.integer' => 'Jawaban harus berupa angka.',
-        'answers.*.min' => 'Pilih salah satu jawaban.',
-        'answers.*.max' => 'Pilih salah satu jawaban.',
     ];
 
     public function mount(): void
     {
-        $this->questions = ScreeningQuestion::all();
-        
+        $this->questions = ScreeningQuestion::activeOrdered()->get();
+
         // Initialize answers array only if questions exist
         if ($this->questions && $this->questions->isNotEmpty()) {
             foreach ($this->questions as $question) {
                 $this->answers[$question->id] = null;
             }
         }
+    }    protected function rules()
+    {
+        $rules = [
+            'name' => 'required|min:2|max:255',
+            'email' => 'required|email|max:255',
+        ];
+
+        // Dynamic rules based on question type
+        if ($this->questions && $this->questions->isNotEmpty()) {
+            foreach ($this->questions as $question) {
+                if ($question->question_type === 'likert') {
+                    $rules['answers.' . $question->id] = 'required|integer|min:1|max:5';
+                } else {
+                    $rules['answers.' . $question->id] = 'required|string|min:1|max:1000';
+                }
+            }
+        }
+
+        return $rules;
     }
 
     public function submit()
@@ -68,27 +84,36 @@ class ScreeningForm extends Component
                 ]
             );
 
-            // Calculate score
+            // Calculate score (only from Likert questions)
             $totalScore = 0;
-            foreach ($this->answers as $answer) {
-                $totalScore += (int)$answer;
+            $likertQuestions = 0;
+            foreach ($this->questions as $question) {
+                if ($question->question_type === 'likert' && isset($this->answers[$question->id])) {
+                    $totalScore += (int)$this->answers[$question->id];
+                    $likertQuestions++;
+                }
             }
 
-            // Determine result based on score
-            $totalQuestions = $this->questions->count();
-            $maxScore = $totalQuestions * 5;
-            $percentage = ($totalScore / $maxScore) * 100;
+            // Determine result based on score (only if there are Likert questions)
+            if ($likertQuestions > 0) {
+                $maxScore = $likertQuestions * 5;
+                $percentage = ($totalScore / $maxScore) * 100;
 
-            if ($percentage >= 80) {
-                $resultText = 'Sangat Baik';
-            } elseif ($percentage >= 60) {
-                $resultText = 'Baik';
-            } elseif ($percentage >= 40) {
-                $resultText = 'Cukup';
-            } elseif ($percentage >= 20) {
-                $resultText = 'Kurang';
+                if ($percentage >= 80) {
+                    $resultText = 'Sangat Baik';
+                } elseif ($percentage >= 60) {
+                    $resultText = 'Baik';
+                } elseif ($percentage >= 40) {
+                    $resultText = 'Cukup';
+                } elseif ($percentage >= 20) {
+                    $resultText = 'Kurang';
+                } else {
+                    $resultText = 'Sangat Kurang';
+                }
             } else {
-                $resultText = 'Sangat Kurang';
+                // If no Likert questions, set a default result
+                $resultText = 'Screening Completed';
+                $maxScore = 0;
             }
 
             // Create screening record
@@ -112,7 +137,7 @@ class ScreeningForm extends Component
             $this->result = $resultText;
             $this->score = $totalScore;
 
-            session()->flash('success', "Screening berhasil disimpan! Hasil: {$resultText} (Skor: {$totalScore}/{$maxScore})");
+            session()->flash('success', "Screening berhasil disimpan! Hasil: {$resultText}" . ($likertQuestions > 0 ? " (Skor: {$totalScore}/{$maxScore})" : ""));
 
             // Reset form
             $this->reset(['name', 'email', 'answers']);

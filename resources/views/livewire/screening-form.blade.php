@@ -96,26 +96,40 @@
                                         {{ $loop->iteration }}. {{ $question->question_text }}
                                     </h3>
 
-                                    <div class="space-y-2">
-                                        @foreach([
-                                            1 => 'Sangat Tidak Setuju',
-                                            2 => 'Tidak Setuju',
-                                            3 => 'Netral',
-                                            4 => 'Setuju',
-                                            5 => 'Sangat Setuju'
-                                        ] as $value => $label)
-                                            <label class="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
-                                                <input
-                                                    type="radio"
-                                                    name="answers[{{ $question->id }}]"
-                                                    value="{{ $value }}"
-                                                    wire:model="answers.{{ $question->id }}"
-                                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                                >
-                                                <span class="text-gray-700">{{ $label }}</span>
-                                            </label>
-                                        @endforeach
-                                    </div>
+                                    @if($question->question_type === 'likert')
+                                        <!-- Likert Scale Input -->
+                                        <div class="space-y-2">
+                                            @foreach([
+                                                1 => 'Sangat Tidak Setuju',
+                                                2 => 'Tidak Setuju',
+                                                3 => 'Netral',
+                                                4 => 'Setuju',
+                                                5 => 'Sangat Setuju'
+                                            ] as $value => $label)
+                                                <label class="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="answers[{{ $question->id }}]"
+                                                        value="{{ $value }}"
+                                                        wire:model="answers.{{ $question->id }}"
+                                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                                    >
+                                                    <span class="text-gray-700">{{ $label }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <!-- Text Input -->
+                                        <div class="space-y-2">
+                                            <textarea
+                                                wire:model="answers.{{ $question->id }}"
+                                                class="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
+                                                rows="4"
+                                                placeholder="{{ $question->placeholder ?: 'Tulis jawaban Anda di sini...' }}"
+                                            ></textarea>
+                                            <p class="text-sm text-gray-500">Silakan jelaskan jawaban Anda dengan detail</p>
+                                        </div>
+                                    @endif
 
                                     @error('answers.' . $question->id)
                                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>

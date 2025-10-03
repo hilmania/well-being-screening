@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             SettingSeeder::class, // Seed default settings for chatbot and other configurations
+            OpenQuestionSeeder::class, // Seed sample open questions
+            LikertQuestionSeeder::class, // Seed sample likert questions
         ]);
 
         // Create admin user
