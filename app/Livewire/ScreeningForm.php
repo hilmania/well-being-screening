@@ -8,6 +8,7 @@ use App\Models\ScreeningAnswer;
 use App\Models\User;
 use Livewire\Component;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 
 class ScreeningForm extends Component
 {
@@ -20,15 +21,6 @@ class ScreeningForm extends Component
     public ?Collection $questions = null;
     public ?string $result = null;
     public ?int $score = null;
-
-    protected $rules = [
-        'name' => 'required|min:2|max:255',
-        'gender' => 'required|in:male,female',
-        'birth_date' => 'required|date|before:today',
-        'address' => 'required|min:10|max:500',
-        'phone' => 'required|regex:/^([0-9\s\-\+\(\)]+)$/|min:10|max:15',
-        'answers.*' => 'required',
-    ];
 
     protected $messages = [
         'name.required' => 'Nama lengkap harus diisi.',
@@ -92,21 +84,46 @@ class ScreeningForm extends Component
                 return;
             }
 
-            // Create or find user with extended information
-            $user = User::firstOrCreate(
-                ['phone' => $this->phone], // Using phone as unique identifier
-                [
+            // Debug: Log the answers array before processing
+            Log::info('Answers array before processing', [
+                'answers' => $this->answers,
+                'questions_count' => $this->questions->count()
+            ]);
+
+            // Create new user for each screening submission
+            // Generate unique email to avoid conflicts
+            $uniqueEmail = $this->phone . '_' . time() . '@screening.local';
+            
+            $user = User::create([
+                'name' => $this->name,
+                'email' => $uniqueEmail,
+                'gender' => $this->gender,
+                'birth_date' => $this->birth_date,
+                'address' => $this->address,
+                'phone' => $this->phone,
+                'password' => bcrypt('default123'),
+                'role' => 'responden',
+                'email_verified_at' => now(),
+            ]);
+
+            // Debug: Log user data to verify new user creation
+            Log::info('New user created for screening', [
+                'user_id' => $user->id,
+                'input_data' => [
                     'name' => $this->name,
-                    'email' => $this->name . '@screening.local', // Generate email for compatibility
                     'gender' => $this->gender,
                     'birth_date' => $this->birth_date,
                     'address' => $this->address,
                     'phone' => $this->phone,
-                    'password' => bcrypt('default123'),
-                    'role' => 'responden',
-                    'email_verified_at' => now(),
+                ],
+                'saved_data' => [
+                    'name' => $user->name,
+                    'gender' => $user->gender,
+                    'birth_date' => $user->birth_date,
+                    'address' => $user->address,
+                    'phone' => $user->phone,
                 ]
-            );
+            ]);
 
             // Calculate score (only from Likert questions)
             $totalScore = 0;
@@ -148,23 +165,42 @@ class ScreeningForm extends Component
                 'result' => $resultText,
             ]);
 
-            // Save answers
-            foreach ($this->answers as $questionId => $answer) {
-                ScreeningAnswer::create([
-                    'screening_id' => $screening->id,
-                    'question_id' => $questionId,
-                    'answer' => $answer,
-                ]);
+            // Save answers - Store the answers array before reset
+            $answersToSave = $this->answers;
+            $savedAnswersCount = 0;
+
+            foreach ($answersToSave as $questionId => $answer) {
+                if ($answer !== null && $answer !== '') {
+                    ScreeningAnswer::create([
+                        'screening_id' => $screening->id,
+                        'question_id' => $questionId,
+                        'answer' => $answer,
+                    ]);
+                    $savedAnswersCount++;
+                }
             }
+
+            // Debug: Log how many answers were saved
+            Log::info('Answers saved', [
+                'screening_id' => $screening->id,
+                'saved_answers_count' => $savedAnswersCount,
+                'total_questions' => $this->questions->count()
+            ]);
 
             // Set result for display
             $this->result = $resultText;
             $this->score = $totalScore;
 
-            session()->flash('success', "Screening berhasil disimpan! Hasil: {$resultText}" . ($likertQuestions > 0 ? " (Skor: {$totalScore}/{$maxScore})" : ""));
+            session()->flash('success', "Screening berhasil disimpan! Hasil: {$resultText}" . ($likertQuestions > 0 ? " (Skor: {$totalScore}/{$maxScore})" : "") . " (Jawaban tersimpan: {$savedAnswersCount})");
 
-            // Reset form
-            $this->reset(['name', 'email', 'answers']);
+            // Reset form AFTER successful save
+            $this->name = '';
+            $this->gender = '';
+            $this->birth_date = '';
+            $this->address = '';
+            $this->phone = '';
+
+            // Reset answers array
             if ($this->questions && $this->questions->isNotEmpty()) {
                 foreach ($this->questions as $question) {
                     $this->answers[$question->id] = null;
@@ -172,7 +208,17 @@ class ScreeningForm extends Component
             }
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+            // Log the actual error for debugging
+            Log::error('Screening form submission error: ' . $e->getMessage(), [
+                'user_data' => [
+                    'name' => $this->name,
+                    'phone' => $this->phone,
+                ],
+                'answers' => $this->answers,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            session()->flash('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi. Error: ' . $e->getMessage());
         }
     }
 
