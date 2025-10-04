@@ -23,10 +23,16 @@ class ScreeningQuestionImportAction extends ExcelImportAction
             ->modalDescription('Pastikan file Excel sesuai dengan format template yang disediakan')
             ->icon('heroicon-o-arrow-up-tray')
             ->color('success')
-            ->uploadDisk('local')
-            ->uploadDirectory('temp/imports')
-            ->maxSize(10240) // 10MB
-            ->acceptedFileTypes(['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
+            ->disk('local')
+            ->uploadField(function ($fileUpload) {
+                return $fileUpload
+                    ->maxSize(10240) // 10MB
+                    ->acceptedFileTypes([
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    ])
+                    ->directory('temp/imports');
+            })
             ->use(
                 model: ScreeningQuestion::class,
                 fieldsToImport: [
