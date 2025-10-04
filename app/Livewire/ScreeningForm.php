@@ -12,7 +12,10 @@ use Illuminate\Database\Eloquent\Collection;
 class ScreeningForm extends Component
 {
     public string $name = '';
-    public string $email = '';
+    public string $gender = '';
+    public string $birth_date = '';
+    public string $address = '';
+    public string $phone = '';
     public array $answers = [];
     public ?Collection $questions = null;
     public ?string $result = null;
@@ -20,14 +23,27 @@ class ScreeningForm extends Component
 
     protected $rules = [
         'name' => 'required|min:2|max:255',
-        'email' => 'required|email|max:255',
+        'gender' => 'required|in:male,female',
+        'birth_date' => 'required|date|before:today',
+        'address' => 'required|min:10|max:500',
+        'phone' => 'required|regex:/^([0-9\s\-\+\(\)]+)$/|min:10|max:15',
         'answers.*' => 'required',
     ];
 
     protected $messages = [
-        'name.required' => 'Nama harus diisi.',
-        'email.required' => 'Email harus diisi.',
-        'email.email' => 'Email tidak valid.',
+        'name.required' => 'Nama lengkap harus diisi.',
+        'name.min' => 'Nama lengkap minimal 2 karakter.',
+        'gender.required' => 'Jenis kelamin harus dipilih.',
+        'gender.in' => 'Jenis kelamin tidak valid.',
+        'birth_date.required' => 'Tanggal lahir harus diisi.',
+        'birth_date.date' => 'Format tanggal lahir tidak valid.',
+        'birth_date.before' => 'Tanggal lahir harus sebelum hari ini.',
+        'address.required' => 'Alamat tinggal harus diisi.',
+        'address.min' => 'Alamat tinggal minimal 10 karakter.',
+        'phone.required' => 'Nomor telepon harus diisi.',
+        'phone.regex' => 'Format nomor telepon tidak valid. Gunakan format Indonesia (contoh: 081234567890 atau +6281234567890).',
+        'phone.min' => 'Nomor telepon minimal 10 digit.',
+        'phone.max' => 'Nomor telepon maksimal 15 digit.',
         'answers.*.required' => 'Semua pertanyaan harus dijawab.',
     ];
 
@@ -45,7 +61,10 @@ class ScreeningForm extends Component
     {
         $rules = [
             'name' => 'required|min:2|max:255',
-            'email' => 'required|email|max:255',
+            'gender' => 'required|in:male,female',
+            'birth_date' => 'required|date|before:today',
+            'address' => 'required|min:10|max:500',
+            'phone' => ['required', 'regex:/^(\+?62|0)[0-9]{8,13}$/', 'min:10', 'max:15'],
         ];
 
         // Dynamic rules based on question type
@@ -73,11 +92,16 @@ class ScreeningForm extends Component
                 return;
             }
 
-            // Create or find user
+            // Create or find user with extended information
             $user = User::firstOrCreate(
-                ['email' => $this->email],
+                ['phone' => $this->phone], // Using phone as unique identifier
                 [
                     'name' => $this->name,
+                    'email' => $this->name . '@screening.local', // Generate email for compatibility
+                    'gender' => $this->gender,
+                    'birth_date' => $this->birth_date,
+                    'address' => $this->address,
+                    'phone' => $this->phone,
                     'password' => bcrypt('default123'),
                     'role' => 'responden',
                     'email_verified_at' => now(),

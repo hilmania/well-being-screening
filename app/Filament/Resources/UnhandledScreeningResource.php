@@ -50,40 +50,62 @@ class UnhandledScreeningResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('user.name')
-                    ->label('Nama Klien')
+                    ->label('Nama Responden')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('user.email')
-                    ->label('Email')
-                    ->searchable(),
-                TextColumn::make('score')
-                    ->label('Skor')
-                    ->numeric()
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state >= 80 => 'danger',
-                        $state >= 60 => 'warning',
-                        default => 'success',
-                    }),
-                TextColumn::make('result')
-                    ->label('Hasil')
+                TextColumn::make('user.gender')
+                    ->label('Jenis Kelamin')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'male' => 'Laki-laki',
+                        'female' => 'Perempuan',
+                        default => '-',
+                    })
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'Risiko Tinggi' => 'danger',
-                        'Risiko Sedang' => 'warning',
-                        'Risiko Rendah' => 'success',
+                        'male' => 'blue',
+                        'female' => 'pink',
                         default => 'gray',
+                    }),
+                TextColumn::make('user.birth_date')
+                    ->label('Tanggal Lahir')
+                    ->date('d/m/Y')
+                    ->sortable(),
+                TextColumn::make('user.phone')
+                    ->label('Nomor Telepon')
+                    ->searchable(),
+                TextColumn::make('user.address')
+                    ->label('Alamat')
+                    ->limit(30)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) <= 30) {
+                            return null;
+                        }
+                        return $state;
                     }),
                 TextColumn::make('screening_date')
                     ->label('Tanggal Screening')
-                    ->date()
+                    ->date('d/m/Y')
                     ->sortable(),
-                TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime()
-                    ->sortable()
-                    ->since(),
+                // TextColumn::make('score')
+                //     ->label('Skor')
+                //     ->numeric()
+                //     ->sortable()
+                //     ->badge()
+                //     ->color(fn (string $state): string => match (true) {
+                //         $state >= 80 => 'danger',
+                //         $state >= 60 => 'warning',
+                //         default => 'success',
+                //     }),
+                // TextColumn::make('result')
+                //     ->label('Hasil')
+                //     ->badge()
+                //     ->color(fn (string $state): string => match ($state) {
+                //         'Risiko Tinggi' => 'danger',
+                //         'Risiko Sedang' => 'warning',
+                //         'Risiko Rendah' => 'success',
+                //         default => 'gray',
+                //     }),
             ])
             ->filters([
                 SelectFilter::make('result')
@@ -93,6 +115,13 @@ class UnhandledScreeningResource extends Resource
                         'Risiko Sedang' => 'Risiko Sedang',
                         'Risiko Rendah' => 'Risiko Rendah',
                     ]),
+                // SelectFilter::make('gender')
+                //     ->label('Jenis Kelamin')
+                //     ->relationship('user', 'gender')
+                //     ->options([
+                //         'male' => 'Laki-laki',
+                //         'female' => 'Perempuan',
+                //     ]),
                 SelectFilter::make('score_range')
                     ->label('Rentang Skor')
                     ->options([
@@ -116,6 +145,20 @@ class UnhandledScreeningResource extends Resource
                     }),
             ])
             ->actions([
+                Action::make('view_answers')
+                    ->label('Lihat Jawaban')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->modalHeading('Jawaban Responden')
+                    ->modalContent(function (WellBeingScreening $record): \Illuminate\Contracts\View\View {
+                        $answers = $record->answers()->with('question')->get();
+                        return view('filament.components.screening-answers', [
+                            'answers' => $answers,
+                            'screening' => $record,
+                        ]);
+                    })
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Tutup'),
                 Action::make('assign_volunteer')
                     ->label('Tanggapi')
                     ->icon('heroicon-o-user-plus')
