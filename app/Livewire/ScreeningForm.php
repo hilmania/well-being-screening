@@ -93,7 +93,7 @@ class ScreeningForm extends Component
             // Create new user for each screening submission
             // Generate unique email to avoid conflicts
             $uniqueEmail = $this->phone . '_' . time() . '@screening.local';
-            
+
             $user = User::create([
                 'name' => $this->name,
                 'email' => $uniqueEmail,
