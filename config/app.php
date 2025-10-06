@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Topoplot API URL
+    |--------------------------------------------------------------------------
+    |
+    | This URL is used to connect to the topoplot generation API service.
+    | You can configure this in your .env file using TOPOPLOT_API_URL.
+    |
+    */
+
+    'topoplot_api_url' => env('TOPOPLOT_API_URL', 'http://127.0.0.1:8000'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

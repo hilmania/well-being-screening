@@ -6,12 +6,15 @@ use App\Models\WellBeingScreening;
 use App\Models\PsychologistResponse;
 use App\Models\VolunteersResponse;
 use App\Models\User;
+use App\Services\TopoplotService;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Placeholder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\HtmlString;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -41,12 +44,19 @@ class UnhandledPsychologistScreeningResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         // Mendapatkan ID screening yang sudah ditangani oleh psikolog
-        $handledScreeningIds = PsychologistResponse::pluck('screening_id')->toArray();
+        $handledByPsychologistIds = PsychologistResponse::pluck('screening_id')->toArray();
 
-        // Query hanya untuk screening yang belum ditangani dan memiliki skor tinggi atau medium (perlu psikolog)
+        // Mendapatkan ID screening yang sudah ditangani oleh relawan
+        $handledByVolunteerIds = VolunteersResponse::pluck('screening_id')->toArray();
+
+        // Query hanya untuk screening yang:
+        // 1. Belum ditangani oleh psikolog
+        // 2. Sudah ditangani oleh relawan
+        // 3. Memiliki skor tinggi atau medium (perlu psikolog)
         return parent::getEloquentQuery()
-            ->whereNotIn('id', $handledScreeningIds)
-            ->where('score', '>=', 60) // Hanya skor medium ke atas yang perlu psikolog
+            ->whereNotIn('id', $handledByPsychologistIds)
+            ->whereIn('id', $handledByVolunteerIds)
+            // ->where('score', '>=', 60) // Hanya skor medium ke atas yang perlu psikolog
             ->with(['user', 'volunteerResponses.volunteer']);
     }
 
@@ -114,6 +124,32 @@ class UnhandledPsychologistScreeningResource extends Resource
                     ->html()
                     ->searchable(false)
                     ->sortable(false),
+                TextColumn::make('topoplot_preview')
+                    ->label('Preview Topoplot')
+                    ->getStateUsing(function ($record) {
+                        $volunteerResponse = $record->volunteerResponses->first();
+                        if ($volunteerResponse && $volunteerResponse->attachment) {
+                            $fileExtension = strtolower(pathinfo($volunteerResponse->attachment, PATHINFO_EXTENSION));
+                            if ($fileExtension === 'csv') {
+                                $filePath = storage_path('app/public/' . $volunteerResponse->attachment);
+
+                                // Cek apakah topoplot sudah ada di cache
+                                $cacheKey = 'topoplot_' . md5($volunteerResponse->attachment);
+                                $cachedImagePath = storage_path('app/topoplot_cache/' . $cacheKey . '.png');
+
+                                if (file_exists($cachedImagePath)) {
+                                    $imageUrl = asset('storage/topoplot_cache/' . $cacheKey . '.png');
+                                    return "<div class='text-center'><img src='{$imageUrl}' alt='Topoplot' class='max-w-24 max-h-24 object-contain rounded-lg border mx-auto' /></div>";
+                                } else {
+                                    return "<div class='text-center'><span class='text-blue-600 text-xs'>Klik 'Generate' untuk membuat topoplot</span></div>";
+                                }
+                            }
+                        }
+                        return '<span class="text-gray-400 text-xs">Tidak tersedia</span>';
+                    })
+                    ->html()
+                    ->searchable(false)
+                    ->sortable(false),
                 TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
@@ -148,6 +184,45 @@ class UnhandledPsychologistScreeningResource extends Resource
                     }),
             ])
             ->actions([
+                Action::make('generate_topoplot')
+                    ->label('Generate Topoplot')
+                    ->icon('heroicon-o-photo')
+                    ->color('info')
+                    ->action(function (WellBeingScreening $record): void {
+                        $volunteerResponse = $record->volunteerResponses->first();
+                        if ($volunteerResponse && $volunteerResponse->attachment) {
+                            $fileExtension = strtolower(pathinfo($volunteerResponse->attachment, PATHINFO_EXTENSION));
+                            if ($fileExtension === 'csv') {
+                                $filePath = storage_path('app/public/' . $volunteerResponse->attachment);
+                                $imageBase64 = TopoplotService::generateTopoplot($filePath, [], true); // Force regenerate
+
+                                if ($imageBase64) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Topoplot berhasil di-generate!')
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Gagal generate topoplot')
+                                        ->body('Pastikan API topoplot berjalan dan file CSV valid.')
+                                        ->danger()
+                                        ->send();
+                                }
+                            } else {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('File bukan CSV')
+                                    ->body('Topoplot hanya dapat di-generate dari file CSV.')
+                                    ->warning()
+                                    ->send();
+                            }
+                        }
+                    })
+                    ->visible(function (WellBeingScreening $record): bool {
+                        $volunteerResponse = $record->volunteerResponses->first();
+                        return $volunteerResponse &&
+                               $volunteerResponse->attachment &&
+                               strtolower(pathinfo($volunteerResponse->attachment, PATHINFO_EXTENSION)) === 'csv';
+                    }),
                 Action::make('assign_psychologist')
                     ->label('Beri Tanggapan')
                     ->color('success')
@@ -173,10 +248,47 @@ class UnhandledPsychologistScreeningResource extends Resource
                                 return new HtmlString("<div class='p-4 bg-yellow-50 border border-yellow-200 rounded-lg'><p class='text-yellow-800'>Belum ditangani oleh relawan</p></div>");
                             })
                             ->columnSpanFull(),
+                        \Filament\Forms\Components\Placeholder::make('topoplot_preview')
+                            ->label('Preview Topoplot EEG')
+                            ->content(function ($record) {
+                                $volunteerResponse = $record->volunteerResponses->first();
+                                if ($volunteerResponse && $volunteerResponse->attachment) {
+                                    $fileExtension = strtolower(pathinfo($volunteerResponse->attachment, PATHINFO_EXTENSION));
+                                    if ($fileExtension === 'csv') {
+                                        $filePath = storage_path('app/public/' . $volunteerResponse->attachment);
+                                        if (file_exists($filePath)) {
+                                            $imageBase64 = TopoplotService::generateTopoplot($filePath);
+                                            if ($imageBase64) {
+                                                $content = "<div class='p-4 bg-blue-50 border border-blue-200 rounded-lg'>";
+                                                $content .= "<div class='flex justify-between items-center mb-3'>";
+                                                $content .= "<h4 class='font-semibold text-blue-800'>Visualisasi Data EEG</h4>";
+                                                $content .= "</div>";
+                                                $content .= "<div class='flex justify-center'>";
+                                                $content .= "<img src='data:image/png;base64,{$imageBase64}' alt='Topoplot EEG' class='max-w-md max-h-96 object-contain rounded-lg border-2 border-blue-300 shadow-lg' />";
+                                                $content .= "</div>";
+                                                $content .= "<p class='text-sm text-blue-600 mt-2 text-center'>Topoplot berdasarkan data EEG dari relawan</p>";
+                                                $content .= "</div>";
+                                                return new HtmlString($content);
+                                            } else {
+                                                $content = "<div class='p-4 bg-yellow-50 border border-yellow-200 rounded-lg'>";
+                                                $content .= "<h4 class='font-semibold text-yellow-800 mb-2'>Topoplot Belum Tersedia</h4>";
+                                                $content .= "<p class='text-yellow-600 text-center mb-3'>Topoplot belum di-generate. Silakan generate terlebih dahulu untuk melihat visualisasi EEG sebagai referensi diagnosis.</p>";
+                                                $content .= "<div class='text-center'>";
+                                                $content .= "<span class='text-xs text-gray-600'>Gunakan tombol 'Generate Topoplot' di table list atau refresh halaman setelah generate</span>";
+                                                $content .= "</div>";
+                                                $content .= "</div>";
+                                                return new HtmlString($content);
+                                            }
+                                        }
+                                    }
+                                }
+                                return new HtmlString("<div class='p-4 bg-gray-50 border border-gray-200 rounded-lg'><p class='text-gray-600 text-center'>File CSV tidak tersedia untuk generate topoplot</p></div>");
+                            })
+                            ->columnSpanFull(),
                         Textarea::make('diagnosis')
                             ->label('Diagnosis')
                             ->rows(4)
-                            ->placeholder('Masukkan diagnosis berdasarkan hasil screening...')
+                            ->placeholder('Masukkan diagnosis berdasarkan hasil screening dan topoplot...')
                             ->required(),
                         Textarea::make('recommendation')
                             ->label('Rekomendasi')

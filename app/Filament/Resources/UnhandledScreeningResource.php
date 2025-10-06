@@ -174,7 +174,7 @@ class UnhandledScreeningResource extends Resource
                         FileUpload::make('attachment')
                             ->label('Lampiran File EEG Data')
                             ->acceptedFileTypes(['text/csv', 'application/csv', 'text/plain'])
-                            ->maxSize(10240) // 10MB
+                            ->maxSize(20480) // 20MB
                             ->helperText('Upload file CSV dengan format data EEG 4 channel (dipisahkan dengan semicolon). Maksimal ukuran: 10MB')
                             ->directory('volunteer-attachments')
                             ->disk('public')
