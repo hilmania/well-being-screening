@@ -9,6 +9,7 @@ use App\Filament\Resources\Settings\Schemas\SettingForm;
 use App\Filament\Resources\Settings\Tables\SettingsTable;
 use App\Models\Setting;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -20,7 +21,12 @@ class SettingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
-    protected static ?string $navigationLabel = 'Settings';
+    protected static string|UnitEnum|null $navigationGroup = 'Pengaturan';
+
+    protected static ?string $navigationLabel = 'Chatbot';
+     protected static ?string $modelLabel = 'Chatbot';
+
+    protected static ?string $pluralModelLabel = 'Chatbot';
 
     protected static ?int $navigationSort = 99;
 

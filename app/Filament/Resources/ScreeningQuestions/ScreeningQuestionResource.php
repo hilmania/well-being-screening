@@ -21,9 +21,11 @@ class ScreeningQuestionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string | UnitEnum | null $navigationGroup = 'References';
+    protected static string | UnitEnum | null $navigationGroup = 'Pengaturan';
 
     protected static ?string $recordTitleAttribute = 'Screening Question';
+    protected static ?string $modelLabel = 'Pertanyaan Screening';
+    protected static ?string $pluralModelLabel = 'Pertanyaan Screening';
 
     public static function form(Schema $schema): Schema
     {

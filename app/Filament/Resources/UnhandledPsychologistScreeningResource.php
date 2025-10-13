@@ -33,13 +33,13 @@ class UnhandledPsychologistScreeningResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationLabel = 'Screening Belum Ditangani Psikolog';
+    protected static ?string $navigationLabel = 'Screening Belum Ditangani';
 
-    protected static ?string $modelLabel = 'Screening Belum Ditangani Psikolog';
+    protected static ?string $modelLabel = 'Screening Belum Ditangani';
 
-    protected static ?string $pluralModelLabel = 'Screening Belum Ditangani Psikolog';
+    protected static ?string $pluralModelLabel = 'Screening Belum Ditangani';
 
-    protected static string | UnitEnum | null $navigationGroup = 'Psychologist Management';
+    protected static string | UnitEnum | null $navigationGroup = 'Psikolog';
 
     public static function getEloquentQuery(): Builder
     {
@@ -272,7 +272,7 @@ class UnhandledPsychologistScreeningResource extends Resource
                                             } else {
                                                 $content = "<div class='p-4 bg-yellow-50 border border-yellow-200 rounded-lg'>";
                                                 $content .= "<h4 class='font-semibold text-yellow-800 mb-2'>Topoplot Belum Tersedia</h4>";
-                                                $content .= "<p class='text-yellow-600 text-center mb-3'>Topoplot belum di-generate. Silakan generate terlebih dahulu untuk melihat visualisasi EEG sebagai referensi diagnosis.</p>";
+                                                $content .= "<p class='text-yellow-600 text-center mb-3'>Topoplot belum di-generate. Silakan generate terlebih dahulu untuk melihat visualisasi EEG sebagai referensi screening.</p>";
                                                 $content .= "<div class='text-center'>";
                                                 $content .= "<span class='text-xs text-gray-600'>Gunakan tombol 'Generate Topoplot' di table list atau refresh halaman setelah generate</span>";
                                                 $content .= "</div>";
@@ -286,9 +286,9 @@ class UnhandledPsychologistScreeningResource extends Resource
                             })
                             ->columnSpanFull(),
                         Textarea::make('diagnosis')
-                            ->label('Diagnosis')
+                            ->label('Catatan')
                             ->rows(4)
-                            ->placeholder('Masukkan diagnosis berdasarkan hasil screening dan topoplot...')
+                            ->placeholder('Masukkan catatan berdasarkan hasil screening dan topoplot...')
                             ->required(),
                         Textarea::make('recommendation')
                             ->label('Rekomendasi')

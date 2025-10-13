@@ -40,6 +40,11 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->sidebarCollapsibleOnDesktop()
+            ->navigationGroups([
+                'Relawan',
+                'Psikolog',
+                'Pengaturan',
+            ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
@@ -57,7 +62,9 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
-                FilamentShieldPlugin::make(),
+                FilamentShieldPlugin::make()
+                    ->navigationGroup('Pengaturan')
+                    ->navigationLabel('Otorisasi'),
             ])
             ->authMiddleware([
                 Authenticate::class,

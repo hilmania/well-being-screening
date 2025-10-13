@@ -33,7 +33,7 @@ class UnhandledScreeningResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Screening Belum Ditangani';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Responses';
+    protected static string|UnitEnum|null $navigationGroup = 'Relawan';
 
     protected static ?int $navigationSort = 1;
 

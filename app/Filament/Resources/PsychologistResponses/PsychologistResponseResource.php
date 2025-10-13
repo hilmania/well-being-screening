@@ -21,7 +21,10 @@ class PsychologistResponseResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string | UnitEnum | null $navigationGroup = 'Psychologist Management';
+    protected static string | UnitEnum | null $navigationGroup = 'Psikolog';
+
+    protected static ?string $modelLabel = 'Respon Psikolog';
+    protected static ?string $pluralModelLabel = 'Respon Psikolog';
 
     public static function form(Schema $schema): Schema
     {

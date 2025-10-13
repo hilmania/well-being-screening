@@ -79,8 +79,8 @@ class VolunteersResponseForm
                 FileUpload::make('attachment')
                     ->label('Lampiran File')
                     ->acceptedFileTypes(['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
-                    ->maxSize(10240) // 10MB
-                    ->helperText('Upload file CSV atau Excel. Maksimal ukuran: 10MB')
+                    ->maxSize(30720) // 30MB
+                    ->helperText('Upload file CSV dari Alat EEG. Maksimal ukuran: 30MB')
                     ->directory('volunteer-attachments')
                     ->disk('public')
                     ->visibility('private')

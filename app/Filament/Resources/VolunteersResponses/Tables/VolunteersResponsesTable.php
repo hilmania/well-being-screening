@@ -19,19 +19,19 @@ class VolunteersResponsesTable
         return $table
             ->columns([
                 TextColumn::make('screening.user.name')
-                    ->label('Nama Klien')
+                    ->label('Nama Responden')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('screening.score')
-                    ->label('Skor Screening')
-                    ->numeric()
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state >= 80 => 'danger',
-                        $state >= 60 => 'warning',
-                        default => 'success',
-                    }),
+                // TextColumn::make('screening.score')
+                //     ->label('Skor Screening')
+                //     ->numeric()
+                //     ->sortable()
+                //     ->badge()
+                //     ->color(fn (string $state): string => match (true) {
+                //         $state >= 80 => 'danger',
+                //         $state >= 60 => 'warning',
+                //         default => 'success',
+                //     }),
                 TextColumn::make('screening.screening_date')
                     ->label('Tanggal Screening')
                     ->date()

@@ -23,10 +23,10 @@ class WellBeingScreeningsTable
                     ->label('Tanggal Screening')
                     ->date()
                     ->sortable(),
-                TextColumn::make('score')
-                    ->label('Skor')
-                    ->numeric()
-                    ->sortable(),
+                // TextColumn::make('score')
+                //     ->label('Skor')
+                //     ->numeric()
+                //     ->sortable(),
                 TextColumn::make('result')
                     ->label('Hasil')
                     ->limit(50)
