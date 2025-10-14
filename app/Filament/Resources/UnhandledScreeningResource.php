@@ -10,6 +10,8 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\UploadedFile;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Actions\Action;
@@ -174,108 +176,83 @@ class UnhandledScreeningResource extends Resource
                         FileUpload::make('attachment')
                             ->label('Lampiran File EEG Data')
                             ->acceptedFileTypes(['text/csv', 'application/csv', 'text/plain'])
-                            ->maxSize(20480) // 20MB
-                            ->helperText('Upload file CSV dengan format data EEG 4 channel (dipisahkan dengan semicolon). Maksimal ukuran: 10MB')
+                            ->maxSize(30700) // 30MB
+                            ->helperText('Upload file CSV dengan format data EEG 4 channel (dipisahkan dengan semicolon). Maksimal ukuran: 30MB')
                             ->directory('volunteer-attachments')
                             ->disk('public')
                             ->visibility('private')
                             ->previewable(false)
-                            ->required(),
-                    ])
-                    ->action(function (WellBeingScreening $record, array $data): void {
-                        // Validasi format file EEG sebelum menyimpan
-                        if (isset($data['attachment']) && $data['attachment']) {
-                            $file = $data['attachment'];
+                            ->required()
+                            ->rules([
+                                'required',
+                                'file',
+                                function ($attribute, $value, $fail) {
+                                    // Custom validation untuk format EEG CSV menggunakan TopoplotService
+                                    if ($value instanceof UploadedFile) {
+                                        $filePath = $value->getRealPath() ?: $value->getPathname();
 
-                            // Get file path - file sudah tersimpan sementara oleh Livewire
-                            $filePath = storage_path('app/public/' . $file);
+                                        if (!$filePath || !file_exists($filePath)) {
+                                            $fail('File tidak dapat diakses untuk validasi.');
+                                            return;
+                                        }
 
-                            if (!file_exists($filePath)) {
-                                Notification::make()
-                                    ->title('Error Validasi File')
-                                    ->body('File tidak ditemukan untuk validasi.')
-                                    ->danger()
-                                    ->send();
-                                return;
-                            }
+                                        $handle = fopen($filePath, 'r');
+                                        if (!$handle) {
+                                            $fail('File tidak dapat dibaca.');
+                                            return;
+                                        }
 
-                            $handle = fopen($filePath, 'r');
+                                        $lineCount = 0;
+                                        $validLines = 0;
+                                        $maxLinesToCheck = 100;
 
-                            if (!$handle) {
-                                Notification::make()
-                                    ->title('Error Validasi File')
-                                    ->body('File tidak dapat dibaca.')
-                                    ->danger()
-                                    ->send();
-                                return;
-                            }
+                                        while (($line = fgets($handle)) !== false && $lineCount < $maxLinesToCheck) {
+                                            $lineCount++;
+                                            $line = trim($line);
 
-                            $lineCount = 0;
-                            $validLines = 0;
-                            $maxLinesToCheck = 100;
+                                            if (empty($line)) {
+                                                continue;
+                                            }
 
-                            while (($line = fgets($handle)) !== false && $lineCount < $maxLinesToCheck) {
-                                $lineCount++;
-                                $line = trim($line);
+                                            $columns = explode(';', $line);
 
-                                if (empty($line)) {
-                                    continue;
-                                }
+                                            if (count($columns) !== 4) {
+                                                fclose($handle);
+                                                $fail("Baris {$lineCount}: File harus memiliki tepat 4 kolom yang dipisahkan dengan semicolon (;). Ditemukan " . count($columns) . " kolom.");
+                                                return;
+                                            }
 
-                                $columns = explode(';', $line);
+                                            foreach ($columns as $index => $column) {
+                                                $column = trim($column);
+                                                $column = str_replace(',', '.', $column);
 
-                                if (count($columns) !== 4) {
-                                    fclose($handle);
-                                    Notification::make()
-                                        ->title('Format File Tidak Valid')
-                                        ->body("Baris {$lineCount}: File harus memiliki tepat 4 kolom yang dipisahkan dengan semicolon (;). Ditemukan " . count($columns) . " kolom.")
-                                        ->danger()
-                                        ->persistent()
-                                        ->send();
-                                    return;
-                                }
+                                                if (!is_numeric($column)) {
+                                                    fclose($handle);
+                                                    $fail("Baris {$lineCount}, kolom " . ($index + 1) . ": Nilai harus berupa angka. Ditemukan: '{$column}'");
+                                                    return;
+                                                }
+                                            }
 
-                                foreach ($columns as $index => $column) {
-                                    $column = trim($column);
-                                    $column = str_replace(',', '.', $column);
+                                            $validLines++;
+                                        }
 
-                                    if (!is_numeric($column)) {
                                         fclose($handle);
-                                        Notification::make()
-                                            ->title('Format Data Tidak Valid')
-                                            ->body("Baris {$lineCount}, kolom " . ($index + 1) . ": Nilai harus berupa angka. Ditemukan: '{$column}'")
-                                            ->danger()
-                                            ->persistent()
-                                            ->send();
-                                        return;
+
+                                        if ($validLines === 0) {
+                                            $fail('File tidak mengandung data yang valid.');
+                                            return;
+                                        }
+
+                                        if ($validLines < 10) {
+                                            $fail('File harus mengandung minimal 10 baris data EEG yang valid.');
+                                            return;
+                                        }
                                     }
                                 }
-
-                                $validLines++;
-                            }
-
-                            fclose($handle);
-
-                            if ($validLines === 0) {
-                                Notification::make()
-                                    ->title('File Kosong')
-                                    ->body('File tidak mengandung data yang valid.')
-                                    ->danger()
-                                    ->send();
-                                return;
-                            }
-
-                            if ($validLines < 10) {
-                                Notification::make()
-                                    ->title('Data Tidak Cukup')
-                                    ->body('File harus mengandung minimal 10 baris data EEG yang valid.')
-                                    ->warning()
-                                    ->send();
-                                return;
-                            }
-                        }
-
-                        // Jika semua validasi berhasil, simpan response
+                            ]),
+                    ])
+                    ->action(function (WellBeingScreening $record, array $data): void {
+                        // Jika mencapai sini, semua validasi sudah berhasil
                         VolunteersResponse::create([
                             'screening_id' => $record->id,
                             'volunteer_id' => Auth::id(),
