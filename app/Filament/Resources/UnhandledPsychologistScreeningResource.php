@@ -116,8 +116,8 @@ class UnhandledPsychologistScreeningResource extends Resource
                         $volunteerResponse = $record->volunteerResponses->first();
                         if ($volunteerResponse && $volunteerResponse->attachment) {
                             $filename = basename($volunteerResponse->attachment);
-                            $url = asset('storage/' . $volunteerResponse->attachment);
-                            return "<a href='{$url}' download='{$filename}' class='inline-flex items-center px-3 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-wide hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 transition ease-in-out duration-150'><svg class='w-3 h-3 mr-1' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 10v6m0 0l-3-3m3 3l3-3'></path></svg>Download</a>";
+                            $url = route('download.volunteer-attachment', ['filename' => $filename]);
+                            return "<a href='{$url}' target='_blank' class='inline-flex items-center px-3 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-wide hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 transition ease-in-out duration-150'><svg class='w-3 h-3 mr-1' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 10v6m0 0l-3-3m3 3l3-3'></path></svg>Download</a>";
                         }
                         return '<span class="text-gray-400 text-xs">Tidak ada</span>';
                     })
@@ -239,8 +239,8 @@ class UnhandledPsychologistScreeningResource extends Resource
                                     $content .= "<p><strong>Catatan:</strong> {$volunteerResponse->notes}</p>";
                                     if ($volunteerResponse->attachment) {
                                         $filename = basename($volunteerResponse->attachment);
-                                        $url = asset('storage/' . $volunteerResponse->attachment);
-                                        $content .= "<div class='mt-3'><a href='{$url}' download='{$filename}' class='inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150'>Download Lampiran Relawan</a></div>";
+                                        $url = route('download.volunteer-attachment', ['filename' => $filename]);
+                                        $content .= "<div class='mt-3'><a href='{$url}' target='_blank' class='inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150'>Download Lampiran Relawan</a></div>";
                                     }
                                     $content .= "</div>";
                                     return new HtmlString($content);

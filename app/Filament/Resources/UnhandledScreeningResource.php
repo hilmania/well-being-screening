@@ -180,7 +180,7 @@ class UnhandledScreeningResource extends Resource
                             ->helperText('Upload file CSV dengan format data EEG 4 channel (dipisahkan dengan semicolon). Maksimal ukuran: 30MB')
                             ->directory('volunteer-attachments')
                             ->disk('public')
-                            ->visibility('private')
+                            ->visibility('public') // Change to public untuk download
                             ->previewable(false)
                             ->required()
                             ->rules([
