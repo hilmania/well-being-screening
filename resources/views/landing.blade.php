@@ -4,9 +4,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="An impressive and flawless site template that includes various UI elements and countless features, attractive ready-made blocks and rich pages, basically everything you need to create a unique and professional website.">
-  <meta name="keywords" content="Tailwind CSS, business, corporate, creative, gulp, marketing, minimal, modern, multipurpose, one page, responsive, saas, sass, seo, startup, html5 template, site template">
-  <meta name="author" content="elemis">
+  <meta name="description" content="Website untuk layanan screening KDRT dan konsultasi psikologi profesional guna mendukung kesehatan mental Anda.">
+  <meta name="keywords" content="screening KDRT, konsultasi psikologi, kesehatan mental, dukungan emosional, layanan psikologi online">
+  <meta name="author" content="Universitas Telkom">
   <title>WellBeing - Care for your wellbeing</title>
   <link rel="shortcut icon" href="./assets/img/favicon.png">
 	<link rel="stylesheet" type="text/css" href="./assets/fonts/unicons/unicons.css">
@@ -85,9 +85,10 @@
       <nav class="navbar navbar-expand-lg classic transparent navbar-light">
         <div class="container xl:!flex-row lg:!flex-row !flex-nowrap items-center">
           <div class="navbar-brand w-full">
-            <a href="./index.html">
+            {{-- <a href="./index.html">
               <img src="./assets/img/logo-dark.png" srcset="./assets/img/logo-dark@2x.png 2x" alt="image">
-            </a>
+            </a> --}}
+            <h2>MyWellbeing</h2>
           </div>
           <div class="navbar-collapse offcanvas offcanvas-nav offcanvas-start">
             <div class="offcanvas-header xl:!hidden lg:!hidden flex items-center justify-between flex-row p-6">
@@ -119,9 +120,9 @@
           <!-- /.navbar-collapse -->
           <div class="navbar-other lg:!ml-4 xl:!ml-4">
             <ul class="navbar-nav !flex-row !items-center !ml-auto">
-              <li class="nav-item hidden xl:block lg:block md:block">
+              {{-- <li class="nav-item hidden xl:block lg:block md:block">
                 <a href="./contact.html" class="btn btn-sm btn-sky !text-white !bg-[#5eb9f0] border-[#5eb9f0] hover:text-white hover:!bg-[#5eb9f0] hover:!border-[#5eb9f0] focus:shadow-[rgba(88,167,216,1)] active:text-white active:!bg-[#5eb9f0] active:border-[#5eb9f0] disabled:text-white disabled:!bg-[#5eb9f0] disabled:border-[#5eb9f0]  !rounded-[50rem]">Contact</a>
-              </li>
+              </li> --}}
               <li class="nav-item xl:!hidden lg:!hidden">
                 <button class="hamburger offcanvas-nav-btn"><span></span></button>
               </li>
@@ -199,7 +200,7 @@
         <div class="flex flex-wrap mx-[-15px] xl:mx-[-35px] lg:mx-[-20px] !mt-[-60px] xxl:!px-5 !text-center items-end">
           <div class="xl:w-4/12 lg:w-4/12 w-full flex-[0_0_auto] xl:!px-[35px] lg:!px-[20px] !px-[15px] max-w-full !mt-[60px]">
             <div class="md:!px-20 lg:!px-3 xl:!px-3">
-              <figure class="!mb-6"><img class="max-w-full h-auto" src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Screening KDRT"></figure>
+              <figure class="!mb-6"><img class="max-w-full h-auto" src="https://images.unsplash.com/photo-1620302044854-9c3387b80ed3?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=400" alt="Screening KDRT"></figure>
               <h3>Screening KDRT</h3>
               <p class="!mb-2">Kami menyediakan layanan screening KDRT yang aman dan rahasia untuk membantu mengidentifikasi tanda-tanda kekerasan dalam rumah tangga.</p>
               <a href="#" class="more hover">Pelajari Lebih Lanjut</a>

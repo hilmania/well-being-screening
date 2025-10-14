@@ -7,8 +7,11 @@ use App\Models\WellBeingScreening;
 use App\Models\ScreeningAnswer;
 use App\Models\User;
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
+
+#[Layout('layouts.guest')]
 
 class ScreeningForm extends Component
 {
@@ -80,7 +83,7 @@ class ScreeningForm extends Component
         try {
             // Check if questions exist
             if (!$this->questions || $this->questions->isEmpty()) {
-                session()->flash('error', 'Tidak ada pertanyaan tersedia saat ini.');
+                session()->flash('error', 'Tidak ada pertanyaan tersedia saat ini. Silakan hubungi administrator.');
                 return;
             }
 
@@ -193,6 +196,13 @@ class ScreeningForm extends Component
 
             session()->flash('success', "Screening berhasil disimpan! Hasil: {$resultText}" . ($likertQuestions > 0 ? " (Skor: {$totalScore}/{$maxScore})" : "") . " (Jawaban tersimpan: {$savedAnswersCount})");
 
+            // Dispatch browser event for toast notification
+            $this->dispatch('showToast', [
+                'type' => 'success',
+                'message' => "Screening berhasil disimpan! Hasil: {$resultText}" . ($likertQuestions > 0 ? " (Skor: {$totalScore}/{$maxScore})" : ""),
+                'duration' => 5000
+            ]);
+
             // Reset form AFTER successful save
             $this->name = '';
             $this->gender = '';
@@ -219,12 +229,18 @@ class ScreeningForm extends Component
             ]);
 
             session()->flash('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi. Error: ' . $e->getMessage());
+
+            // Dispatch browser event for error toast
+            $this->dispatch('showToast', [
+                'type' => 'error',
+                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
+                'duration' => 8000
+            ]);
         }
     }
 
     public function render()
     {
-        return view('livewire.screening-form')
-            ->layout('layouts.guest');
+        return view('livewire.screening-form');
     }
 }
