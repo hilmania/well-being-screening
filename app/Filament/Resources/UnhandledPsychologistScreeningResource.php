@@ -295,16 +295,16 @@ class UnhandledPsychologistScreeningResource extends Resource
                             ->rows(4)
                             ->placeholder('Masukkan rekomendasi penanganan untuk klien...')
                             ->required(),
-                        FileUpload::make('attachment')
-                            ->label('Lampiran File')
-                            ->acceptedFileTypes(['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf'])
-                            ->maxSize(10240) // 10MB
-                            ->helperText('Upload file CSV, Excel, atau PDF. Maksimal ukuran: 10MB')
-                            ->directory('psychologist-attachments')
-                            ->disk('public')
-                            ->visibility('private')
-                            ->previewable(false)
-                            ->nullable(),
+                        // FileUpload::make('attachment')
+                        //     ->label('Lampiran File')
+                        //     ->acceptedFileTypes(['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pdf'])
+                        //     ->maxSize(10240) // 10MB
+                        //     ->helperText('Upload file CSV, Excel, atau PDF. Maksimal ukuran: 10MB')
+                        //     ->directory('psychologist-attachments')
+                        //     ->disk('public')
+                        //     ->visibility('private')
+                        //     ->previewable(false)
+                        //     ->nullable(),
                     ])
                     ->action(function (WellBeingScreening $record, array $data): void {
                         PsychologistResponse::create([
