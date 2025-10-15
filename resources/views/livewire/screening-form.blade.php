@@ -1,64 +1,6 @@
 <div class="w-full max-w-4xl mx-auto">
-    <!-- Toast Notification Container -->
-    <div
-        x-data="{
-            notifications: [],
-            addNotification(data) {
-                const id = Date.now();
-                this.notifications.push({ ...data, id });
-                if (data.duration) {
-                    setTimeout(() => this.removeNotification(id), data.duration);
-                }
-            },
-            removeNotification(id) {
-                this.notifications = this.notifications.filter(n => n.id !== id);
-            }
-        }"
-        @show-toast.window="addNotification($event.detail)"
-        class="fixed top-4 right-4 z-50 space-y-2"
-    >
-        <template x-for="notification in notifications" :key="notification.id">
-            <div
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 transform translate-x-2"
-                x-transition:enter-end="opacity-100 transform translate-x-0"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100 transform translate-x-0"
-                x-transition:leave-end="opacity-0 transform translate-x-2"
-                :class="{
-                    'bg-green-500': notification.type === 'success',
-                    'bg-red-500': notification.type === 'error',
-                    'bg-blue-500': notification.type === 'info',
-                    'bg-yellow-500': notification.type === 'warning'
-                }"
-                class="max-w-sm w-full text-white p-4 rounded-lg shadow-lg flex items-center justify-between"
-            >
-                <div class="flex items-center">
-                    <div x-show="notification.type === 'success'" class="flex-shrink-0 mr-3">
-                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div x-show="notification.type === 'error'" class="flex-shrink-0 mr-3">
-                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <p class="text-sm font-medium" x-text="notification.message"></p>
-                </div>
-                <button @click="removeNotification(notification.id)" class="ml-4 text-white hover:text-gray-200">
-                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                    </svg>
-                </button>
-            </div>
-        </template>
-    </div>
-
     <div class="bg-white shadow-lg rounded-lg p-8">
-        <div class="bg-gray-50 p-6 rounded-lg">
-
-                {{-- <!-- DEBUG: Tombol Submit akan muncul di sini -->
+        <div class="bg-gray-50 p-6 rounded-lg">                {{-- <!-- DEBUG: Tombol Submit akan muncul di sini -->
                 <div style="background: red; color: white; padding: 10px; margin: 20px 0; text-align: center;">
                     DEBUG: Area tombol submit - jika Anda tidak melihat tombol di bawah ini, ada masalah rendering
                 </div>
@@ -92,7 +34,7 @@ Kami sangat berharap dapat membantu Bapak/Ibu.</p>
         </div>
 
             @if (session('success'))
-                <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg shadow-md" x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-90" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-90">
+                <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg shadow-md">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <svg class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -105,19 +47,12 @@ Kami sangat berharap dapat membantu Bapak/Ibu.</p>
                                 {{ session('success') }}
                             </div>
                         </div>
-                        <div class="ml-auto pl-3">
-                            <button @click="show = false" class="inline-flex text-green-400 hover:text-green-600">
-                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                </svg>
-                            </button>
-                        </div>
                     </div>
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg shadow-md" x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-90" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-90">
+                <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg shadow-md">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
@@ -129,13 +64,6 @@ Kami sangat berharap dapat membantu Bapak/Ibu.</p>
                             <div class="mt-1 text-sm text-red-700">
                                 {{ session('error') }}
                             </div>
-                        </div>
-                        <div class="ml-auto pl-3">
-                            <button @click="show = false" class="inline-flex text-red-400 hover:text-red-600">
-                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                </svg>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -293,23 +221,82 @@ Kami sangat berharap dapat membantu Bapak/Ibu.</p>
                     </div>
                 @endif
 
+                <!-- Consent Checkbox -->
+                <div class="mt-8 mb-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex items-center h-5">
+                            <input
+                                type="checkbox"
+                                id="consent"
+                                wire:model="consent"
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                required
+                            >
+                        </div>
+                        <div class="flex-1">
+                            <label for="consent" class="text-sm font-medium text-gray-900 cursor-pointer">
+                                Persetujuan Penggunaan Data Pribadi
+                            </label>
+                            <p class="text-sm text-gray-600 mt-1">
+                                Saya menyetujui data pribadi saya digunakan untuk keperluan screening kesehatan mental ini dan diproses sesuai dengan kebijakan privasi yang berlaku. Data akan dijaga kerahasiaan dan hanya digunakan untuk tujuan medis dan penelitian yang telah disetujui. Informasi yang saya berikan akan membantu dalam proses evaluasi dan memberikan rekomendasi yang sesuai.
+                            </p>
+                            <p class="text-xs text-blue-600 mt-2">
+                                <strong>Catatan:</strong> Dengan mencentang kotak ini, Anda mengonfirmasi bahwa Anda telah membaca dan memahami penggunaan data pribadi Anda.
+                            </p>
+                        </div>
+                    </div>
+                    @error('consent')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Submit Button -->
                 <div class="text-center mt-8 mb-8">
                     <button
                         type="submit"
-                        class="inline-flex items-center px-8 py-4 border-2 border-blue-600 text-lg font-bold rounded-lg text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                        class="px-8 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                         wire:loading.attr="disabled"
-                        style="min-height: 50px; display: block !important; visibility: visible !important; color: white !important;"
                     >
-                        <span wire:loading.remove style="color: black !important; display: inline !important;">
-                            🚀 KIRIM SCREENING
+                        <span wire:loading.remove>
+                            Kirim Screening
                         </span>
-                        {{-- <span wire:loading style="color: white !important; display: inline !important;">
+                        <span wire:loading>
                             Memproses...
-                        </span> --}}
+                        </span>
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- SweetAlert Event Listener -->
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('showSweetAlert', (data) => {
+                Swal.fire({
+                    icon: data.icon || 'info',
+                    title: data.title || 'Notifikasi',
+                    text: data.text || 'Terima kasih sudah mengisi screening.',
+                    confirmButtonText: data.confirmButtonText || 'OK',
+                    confirmButtonColor: data.icon === 'success' ? '#10B981' : (data.icon === 'error' ? '#EF4444' : '#3B82F6'),
+                    timer: data.timer || null,
+                    timerProgressBar: data.timer ? true : false,
+                    showConfirmButton: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    customClass: {
+                        popup: 'rounded-lg',
+                        title: 'text-lg font-semibold',
+                        content: 'text-gray-600',
+                        confirmButton: 'px-6 py-2 rounded-lg font-medium'
+                    }
+                }).then((result) => {
+                    // Redirect to landing page when OK is clicked or alert is dismissed
+                    if (result.isConfirmed || result.isDismissed) {
+                        window.location.href = '/';
+                    }
+                });
+            });
+        });
+    </script>
 </div>

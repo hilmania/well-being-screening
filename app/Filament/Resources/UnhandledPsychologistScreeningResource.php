@@ -72,16 +72,16 @@ class UnhandledPsychologistScreeningResource extends Resource
                     ->label('Email')
                     ->searchable()
                     ->copyable(),
-                TextColumn::make('score')
-                    ->label('Skor')
-                    ->numeric()
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state >= 80 => 'danger',
-                        $state >= 60 => 'warning',
-                        default => 'success',
-                    }),
+                // TextColumn::make('score')
+                //     ->label('Skor')
+                //     ->numeric()
+                //     ->sortable()
+                //     ->badge()
+                //     ->color(fn (string $state): string => match (true) {
+                //         $state >= 80 => 'danger',
+                //         $state >= 60 => 'warning',
+                //         default => 'success',
+                //     }),
                 TextColumn::make('result')
                     ->label('Hasil Screening')
                     ->badge()

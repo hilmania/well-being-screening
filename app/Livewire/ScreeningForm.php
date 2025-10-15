@@ -21,6 +21,7 @@ class ScreeningForm extends Component
     public string $address = '';
     public string $phone = '';
     public array $answers = [];
+    public bool $consent = false;
     public ?Collection $questions = null;
     public ?string $result = null;
     public ?int $score = null;
@@ -40,6 +41,7 @@ class ScreeningForm extends Component
         'phone.min' => 'Nomor telepon minimal 10 digit.',
         'phone.max' => 'Nomor telepon maksimal 15 digit.',
         'answers.*.required' => 'Semua pertanyaan harus dijawab.',
+        'consent.accepted' => 'Anda harus menyetujui penggunaan data pribadi untuk melanjutkan.',
     ];
 
     public function mount(): void
@@ -52,7 +54,9 @@ class ScreeningForm extends Component
                 $this->answers[$question->id] = null;
             }
         }
-    }    protected function rules()
+    }
+
+    protected function rules()
     {
         $rules = [
             'name' => 'required|min:2|max:255',
@@ -60,6 +64,7 @@ class ScreeningForm extends Component
             'birth_date' => 'required|date|before:today',
             'address' => 'required|min:10|max:500',
             'phone' => ['required', 'regex:/^(\+?62|0)[0-9]{8,13}$/', 'min:10', 'max:15'],
+            'consent' => 'accepted',
         ];
 
         // Dynamic rules based on question type
@@ -194,14 +199,17 @@ class ScreeningForm extends Component
             $this->result = $resultText;
             $this->score = $totalScore;
 
-            session()->flash('success', "Screening berhasil disimpan! Hasil: {$resultText}" . ($likertQuestions > 0 ? " (Skor: {$totalScore}/{$maxScore})" : "") . " (Jawaban tersimpan: {$savedAnswersCount})");
-
-            // Dispatch browser event for toast notification
-            $this->dispatch('showToast', [
-                'type' => 'success',
-                'message' => "Screening berhasil disimpan! Hasil: {$resultText}" . ($likertQuestions > 0 ? " (Skor: {$totalScore}/{$maxScore})" : ""),
-                'duration' => 5000
+            // Dispatch SweetAlert for success notification
+            $this->dispatch('showSweetAlert', [
+                'icon' => 'success',
+                'title' => 'Screening Berhasil!',
+                'text' => "Hasil: {$resultText}" . ($likertQuestions > 0 ? " (Skor: {$totalScore}/{$maxScore})" : "") . ". Jawaban tersimpan: {$savedAnswersCount}",
+                'confirmButtonText' => 'Tutup',
+                'timer' => 6000
             ]);
+
+            // Keep session flash for compatibility
+            session()->flash('success', "Screening berhasil disimpan! Hasil: {$resultText}" . ($likertQuestions > 0 ? " (Skor: {$totalScore}/{$maxScore})" : "") . " (Jawaban tersimpan: {$savedAnswersCount})");
 
             // Reset form AFTER successful save
             $this->name = '';
@@ -209,8 +217,7 @@ class ScreeningForm extends Component
             $this->birth_date = '';
             $this->address = '';
             $this->phone = '';
-
-            // Reset answers array
+            $this->consent = false;            // Reset answers array
             if ($this->questions && $this->questions->isNotEmpty()) {
                 foreach ($this->questions as $question) {
                     $this->answers[$question->id] = null;
@@ -230,11 +237,12 @@ class ScreeningForm extends Component
 
             session()->flash('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi. Error: ' . $e->getMessage());
 
-            // Dispatch browser event for error toast
-            $this->dispatch('showToast', [
-                'type' => 'error',
-                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'duration' => 8000
+            // Dispatch SweetAlert for error notification
+            $this->dispatch('showSweetAlert', [
+                'icon' => 'error',
+                'title' => 'Terjadi Kesalahan',
+                'text' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi atau hubungi administrator jika masalah berlanjut.',
+                'confirmButtonText' => 'Tutup'
             ]);
         }
     }
