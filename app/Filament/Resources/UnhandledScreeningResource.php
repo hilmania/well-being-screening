@@ -182,7 +182,7 @@ class UnhandledScreeningResource extends Resource
                             ->disk('public')
                             ->visibility('public') // Change to public untuk download
                             ->previewable(false)
-                            ->required()
+                            // ->required()
                             ->rules([
                                 'required',
                                 'file',
