@@ -135,10 +135,10 @@ class VolunteersResponseForm
                 FileUpload::make('attachment')
                     ->label(fn ($record) => $record ? 'Ganti Lampiran File (Opsional)' : 'Lampiran File')
                     ->acceptedFileTypes(['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
-                    ->maxSize(30720) // 30MB
+                    ->maxSize(40960) // 40MB in kilobytes to be safe
                     ->helperText(fn ($record) => $record
-                        ? 'Upload file baru untuk mengganti file yang sudah ada. Biarkan kosong jika tidak ingin mengubah.'
-                        : 'Upload file CSV dari Alat EEG. Maksimal ukuran: 30MB'
+                        ? 'Upload file baru untuk mengganti file yang sudah ada. Biarkan kosong jika tidak ingin mengubah. Maksimal ukuran: 40MB'
+                        : 'Upload file CSV dari Alat EEG. Maksimal ukuran: 40MB'
                     )
                     ->directory('volunteer-attachments')
                     ->disk('public')

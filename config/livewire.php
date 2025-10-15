@@ -14,7 +14,7 @@ return [
     */
     'temporary_file_upload' => [
         'disk' => env('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK', 'local'),
-        'rules' => null, // Example: ['file', 'mimes:png,jpg', 'max:102400'] (Max 100MB)
+        'rules' => ['file', 'max:40960'], // Max 40MB for temporary files to be safe
         'directory' => 'livewire-tmp',
         'middleware' => null, // Example: 'throttle:5,1'
         'preview_mimes' => [

@@ -322,7 +322,7 @@ class UnhandledPsychologistScreeningResource extends Resource
                     ->modalHeading('Tanggapi Screening')
                     ->modalDescription('Berikan diagnosis dan rekomendasi untuk menangani screening ini')
                     ->slideOver()
-                    ->modalWidth('4xl'),
+                    ->modalWidth('7xl'),
             ])
             ->defaultSort('created_at', 'desc')
             ->emptyStateHeading('Tidak ada screening yang perlu ditangani psikolog')

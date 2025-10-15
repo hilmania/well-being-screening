@@ -38,12 +38,12 @@ class TopoplotService
 
             $filename = basename($csvFilePath);
             $apiBaseUrl = config('app.topoplot_api_url', 'http://127.0.0.1:8000');
-            $apiUrl = rtrim($apiBaseUrl, '/') . '/topoplot_csv_label';
+            // $apiUrl = rtrim($apiBaseUrl, '/') . '/topoplot_csv_label';
+            $apiUrl = rtrim($apiBaseUrl, '/') . '/topoplot_17';
+
 
             $defaultOptions = [
-                'return' => 'base64',
-                'dpi' => 100,
-                'row' => 2
+                'return' => 'base64'
             ];
 
             $requestOptions = array_merge($defaultOptions, $options);
@@ -58,9 +58,15 @@ class TopoplotService
                 ->attach('file', file_get_contents($csvFilePath), $filename)
                 ->post($apiUrl, $requestOptions);
 
+            Log::info('Topoplot API response received', [
+                'status' => $response->status(),
+                'headers' => $response->headers(),
+                'success' => $response->successful()
+            ]);
+
             if ($response->successful()) {
                 $data = $response->json();
-                $imageBase64 = $data['image_base64'] ?? null;
+                $imageBase64 = $data['image'] ?? null; // Changed from 'image_base64' to 'image'
 
                 if ($imageBase64) {
                     // Cache the image for 24 hours
@@ -71,6 +77,11 @@ class TopoplotService
                     ]);
 
                     return $imageBase64;
+                } else {
+                    Log::error('Topoplot API response missing image data', [
+                        'response_data' => $data,
+                        'available_keys' => array_keys($data)
+                    ]);
                 }
             } else {
                 Log::error('Topoplot API failed', [
@@ -118,9 +129,16 @@ class TopoplotService
      */
     public static function clearAllCache(): void
     {
-        $keys = Cache::getRedis()->keys('*topoplot_*');
-        foreach ($keys as $key) {
-            Cache::forget(str_replace(config('cache.prefix') . ':', '', $key));
+        // For database cache, we need to clear differently
+        try {
+            $keys = Cache::store()->many([]);
+            foreach ($keys as $key => $value) {
+                if (str_starts_with($key, 'topoplot_')) {
+                    Cache::forget($key);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Could not clear all topoplot cache', ['error' => $e->getMessage()]);
         }
     }
 }

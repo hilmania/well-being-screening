@@ -176,8 +176,8 @@ class UnhandledScreeningResource extends Resource
                         FileUpload::make('attachment')
                             ->label('Lampiran File EEG Data')
                             ->acceptedFileTypes(['text/csv', 'application/csv', 'text/plain'])
-                            ->maxSize(30700) // 30MB
-                            ->helperText('Upload file CSV dengan format data EEG 4 channel (dipisahkan dengan semicolon). Maksimal ukuran: 30MB')
+                            ->maxSize(40960) // 40MB in kilobytes to be safe
+                            ->helperText('Upload file CSV dengan format data EEG 4 channel (dipisahkan dengan semicolon). Maksimal ukuran: 40MB')
                             ->directory('volunteer-attachments')
                             ->disk('public')
                             ->visibility('public') // Change to public untuk download
@@ -186,6 +186,7 @@ class UnhandledScreeningResource extends Resource
                             ->rules([
                                 'required',
                                 'file',
+                                'max:40960', // Also add max rule explicitly (40MB)
                                 function ($attribute, $value, $fail) {
                                     // Custom validation untuk format EEG CSV menggunakan TopoplotService
                                     if ($value instanceof UploadedFile) {
