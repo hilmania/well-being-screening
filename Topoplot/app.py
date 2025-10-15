@@ -1,5 +1,5 @@
-import io, csv, base64, zipfile, re
-from typing import Dict, Tuple, List
+import io, csv, base64, zipfile, re, math
+from typing import Dict, Tuple, List, Optional
 
 import numpy as np
 import matplotlib
@@ -23,22 +23,21 @@ def _mid(a, b):
     ax, ay = MONTAGE_XY[a]; bx, by = MONTAGE_XY[b]
     return ((ax + bx) / 2.0, (ay + by) / 2.0)
 
-# 4 channel utama dari file mentah:
+# 4 channel yang kita gunakan + titik sintetis
 MONTAGE_XY["AF7"]  = _mid("Fp1", "F7")
 MONTAGE_XY["AF8"]  = _mid("Fp2", "F8")
-MONTAGE_XY["TP9"]  = _mid("T7",  "P7")   # ~T5
-MONTAGE_XY["TP10"] = _mid("T8",  "P8")   # ~T6
+MONTAGE_XY["TP9"]  = _mid("T7",  "P7")
+MONTAGE_XY["TP10"] = _mid("T8",  "P8")
 
-DEFAULT_LAYOUT = ["AF7", "AF8", "TP9", "TP10"]
+CSV_COLS = ["RAW_TP9", "RAW_AF7", "RAW_AF8", "RAW_TP10"]
 
 # ----------------- Parsing angka lokal (koma/titik) -----------------
-_num_space = re.compile(r"[\s\u00A0]")  # spasi & NBSP
+_num_space = re.compile(r"[\s\u00A0]")
 
 def parse_number_str(s: str) -> float:
     s = s.strip()
     s = _num_space.sub("", s)
     if "," in s and "." in s:
-        # tanda terakhir = desimal
         if s.rfind(",") > s.rfind("."):
             s = s.replace(".", "")
             s = s.replace(",", ".")
@@ -52,49 +51,83 @@ def parse_number_str(s: str) -> float:
             s = "".join(parts[:-1]) + "." + parts[-1]
     return float(s)
 
-def try_float(s: str):
-    try:
-        return parse_number_str(s)
-    except Exception:
-        return None
+def try_float(s: str) -> Optional[float]:
+    try: return parse_number_str(s)
+    except Exception: return None
 
-# ----------------- Gambar kepala -----------------
-def _draw_head(ax):
-    head = plt.Circle((0, 0), 1.02, fill=False, linewidth=2)
-    ax.add_artist(head)
-    ax.plot([-0.06, 0, 0.06], [1.02, 1.08, 1.02], linewidth=2)  # hidung
-    ax.plot([-1.04, -1.15, -1.04], [0.2, 0, -0.2], linewidth=2) # telinga kiri
-    ax.plot([ 1.04,  1.15,  1.04], [0.2, 0, -0.2], linewidth=2) # telinga kanan
+def _decode_bytes(b: bytes) -> str:
+    try: return b.decode("utf-8")
+    except: return b.decode("latin1", "ignore")
 
-# ----------------- IDW interpolation agar merata satu kepala -----------------
+# ----------------- CSV dengan header -----------------
+def read_csv_with_header(file_or_bytes) -> Tuple[List[str], List[List[str]]]:
+    raw = file_or_bytes.read() if hasattr(file_or_bytes, "read") else file_or_bytes
+    text = _decode_bytes(raw)
+
+    dialect = None
+    for delims in [";, \t", ",;\t", ",;\t "]:
+        try:
+            sample = text[:8192]
+            dialect = csv.Sniffer().sniff(sample, delimiters=delims)
+            break
+        except Exception:
+            continue
+    if dialect is None:
+        best_rows, best_header, best_score = [], [], -1
+        for d in [",", ";", "\t", " "]:
+            sio = io.StringIO(text)
+            r = list(csv.reader(sio, delimiter=d))
+            if not r: continue
+            score = sum(len(x) for x in r)
+            if score > best_score:
+                best_rows, best_score = r, score
+        header = [h.strip() for h in best_rows[0]]
+        rows = [ [c for c in row] for row in best_rows[1:] ]
+        return header, rows
+
+    sio = io.StringIO(text)
+    reader = csv.reader(sio, dialect)
+    all_rows = list(reader)
+    if not all_rows:
+        return [], []
+    header = [h.strip() for h in all_rows[0]]
+    rows = [ [c for c in row] for row in all_rows[1:] ]
+    return header, rows
+
+# ----------------- IDW interpolation -----------------
 def _idw_grid(x, y, z, power=2.0, grid_n=240):
     lin = np.linspace(-1.05, 1.05, grid_n)
     XX, YY = np.meshgrid(lin, lin)
     RR = np.sqrt(XX**2 + YY**2)
     mask = RR <= 1.0
 
-    pts = np.stack([x, y], axis=1)              # (N,2)
-    G   = np.stack([XX.ravel(), YY.ravel()], 1) # (M,2)
+    pts = np.stack([x, y], axis=1)
+    G   = np.stack([XX.ravel(), YY.ravel()], 1)
     d2  = (G[:, None, 0] - pts[None, :, 0])**2 + (G[:, None, 1] - pts[None, :, 1])**2
     d   = np.sqrt(d2) + 1e-12
 
-    w    = 1.0 / (d**power)         # (M,N)
+    w    = 1.0 / (d**power)
     Wsum = np.sum(w, axis=1)
     Z    = np.sum(w * z[None, :], axis=1) / Wsum
     ZZ   = Z.reshape(grid_n, grid_n)
     ZZ[~mask] = np.nan
     return XX, YY, ZZ
 
-# ----------------- Topoplot (pakai titik sintetis + IDW) -----------------
-def make_topoplot(values: Dict[str, float], dpi: int = 150) -> io.BytesIO:
+def _draw_head(ax):
+    head = plt.Circle((0, 0), 1.02, fill=False, linewidth=2)
+    ax.add_artist(head)
+    ax.plot([-0.06, 0, 0.06], [1.02, 1.08, 1.02], linewidth=2)
+    ax.plot([-1.04, -1.15, -1.04], [0.2, 0, -0.2], linewidth=2)
+    ax.plot([ 1.04,  1.15,  1.04], [0.2, 0, -0.2], linewidth=2)
+
+def _plot_single_topoplot(ax, values: Dict[str, float], title: str):
+    """Plot single topoplot pada axes yang diberikan"""
     vals = dict(values)
 
-    # safe mean untuk handle None
     def safe_mean(arr):
         arr = [v for v in arr if v is not None]
         return (float(np.nanmean(arr)) if len(arr) > 0 else None)
 
-    # sintetis (Fz, Pz, Cz)
     a = vals.get("AF7");  b = vals.get("AF8")
     c = vals.get("TP9");  d = vals.get("TP10")
     fz = safe_mean([a, b])
@@ -104,7 +137,6 @@ def make_topoplot(values: Dict[str, float], dpi: int = 150) -> io.BytesIO:
     if pz is not None: vals["Pz"] = pz
     if cz is not None: vals["Cz"] = cz
 
-    # kumpulkan titik valid
     xs, ys, zs, labels = [], [], [], []
     for ch, v in vals.items():
         if (ch in MONTAGE_XY) and (v is not None):
@@ -113,191 +145,306 @@ def make_topoplot(values: Dict[str, float], dpi: int = 150) -> io.BytesIO:
 
     xs = np.array(xs); ys = np.array(ys); zs = np.array(zs)
     if xs.size < 3:
-        raise ValueError("Minimal 3 channel valid diperlukan untuk topoplot.")
+        ax.text(0.5, 0.5, "Insufficient data", ha="center", va="center", transform=ax.transAxes)
+        ax.axis("off")
+        return
 
-    # Interpolasi IDW ke grid bulat
     XX, YY, ZZ = _idw_grid(xs, ys, zs, power=2.0, grid_n=240)
 
-    # Plot
-    fig = plt.figure(figsize=(4.6, 4.6), dpi=dpi)
-    ax  = fig.add_axes([0.02, 0.02, 0.96, 0.96])
-    ax.set_aspect("equal"); ax.axis("off")
+    ax.set_aspect("equal")
+    ax.axis("off")
 
     ax.imshow(ZZ, extent=[-1.05, 1.05, -1.05, 1.05], origin="lower", interpolation="bilinear")
     ax.contour(XX, YY, ZZ, levels=10, colors="k", linewidths=0.4, alpha=0.35)
 
     ax.scatter(xs, ys, s=18, c="k", zorder=3)
     for (x, y, lab) in zip(xs, ys, labels):
-        ax.text(x, y, lab, fontsize=8, color="white", ha="center", va="center",
+        ax.text(x, y, lab, fontsize=7, color="white", ha="center", va="center",
                 bbox=dict(boxstyle="round,pad=0.2", fc="black", alpha=0.55, lw=0), zorder=4)
 
     _draw_head(ax)
-    fig.tight_layout()
+    ax.set_title(title, fontsize=10, pad=8)
 
+def make_combined_topoplot(segments_data: List[Tuple[str, Dict[str, float]]]) -> io.BytesIO:
+    """
+    Buat 1 gambar besar dengan 17 topoplot dalam grid 3 baris (6, 6, 5)
+    segments_data: list of (name, values_dict)
+    """
+    n_plots = len(segments_data)
+    
+    # Layout: 3 rows
+    # Row 1: 6 plots
+    # Row 2: 6 plots  
+    # Row 3: 5 plots
+    rows = 3
+    cols = 6
+    
+    fig = plt.figure(figsize=(18, 9), dpi=150)
+    
+    for idx, (name, vals) in enumerate(segments_data):
+        # Hitung posisi
+        if idx < 6:
+            row, col = 0, idx
+        elif idx < 12:
+            row, col = 1, idx - 6
+        else:
+            row, col = 2, idx - 12
+            
+        ax = plt.subplot2grid((rows, cols), (row, col))
+        _plot_single_topoplot(ax, vals, name)
+    
+    plt.tight_layout()
+    
     buf = io.BytesIO()
-    fig.savefig(buf, format="png")
+    fig.savefig(buf, format="png", bbox_inches="tight")
     plt.close(fig)
     buf.seek(0)
     return buf
 
-# ----------------- CSV helpers -----------------
-def _decode_bytes(b: bytes) -> str:
-    try: return b.decode("utf-8")
-    except: return b.decode("latin1", "ignore")
+# ----------------- Util segmenting -----------------
+def build_segment_plan() -> List[Tuple[str, float]]:
+    plan_text = [
+        ("Netral", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Control", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Control", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Control", 2), ("Blank", 1),
+        ("Control", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Netral", 2), ("Blank", 1),
+        ("Control", 2), ("Blank", 1),
+    ]
+    return plan_text
 
-def read_rows_any(file_or_bytes) -> List[List[str]]:
-    """
-    Baca CSV tanpa header. Deteksi delimiter:
-    1) csv.Sniffer
-    2) fallback ke [',',';','\\t']
-    3) fallback regex split
-    """
-    raw = file_or_bytes.read() if hasattr(file_or_bytes, "read") else file_or_bytes
-    text = _decode_bytes(raw)
+def estimate_fs_from_time(header: List[str], rows: List[List[str]]) -> Optional[float]:
+    lower = [h.lower() for h in header]
+    candidates = ["time", "timestamp", "t"]
+    idx = -1
+    for cand in candidates:
+        if cand in lower:
+            idx = lower.index(cand)
+            break
+    if idx < 0:
+        return None
+    ts = []
+    for r in rows[:2000]:
+        if idx >= len(r): continue
+        v = try_float(r[idx])
+        if v is not None:
+            ts.append(v)
+    if len(ts) < 3:
+        return None
+    ts = np.asarray(ts, dtype=float)
+    diffs = np.diff(ts)
+    diffs = diffs[(diffs > 0) & np.isfinite(diffs)]
+    if len(diffs) == 0:
+        return None
+    dt = float(np.median(diffs))
+    if dt <= 0:
+        return None
+    fs = 1.0 / dt
+    return fs
 
-    # 1) sniffer
-    try:
-        sample = text[:8192]
-        dialect = csv.Sniffer().sniff(sample, delimiters=";, \t")
-        sio = io.StringIO(text)
-        rows = [r for r in csv.reader(sio, dialect) if any(c.strip() for c in r)]
-        if rows:
-            return rows
-    except Exception:
-        pass
+def series_from_csv(header: List[str], rows: List[List[str]]) -> Dict[str, np.ndarray]:
+    hlower = [h.strip().lower() for h in header]
+    def find_idx(name: str) -> int:
+        nm = name.strip().lower()
+        if nm in hlower:
+            return hlower.index(nm)
+        nm2 = nm.replace("_", " ").replace("-", " ")
+        for i, hh in enumerate(hlower):
+            if hh.replace("_", " ").replace("-", " ") == nm2:
+                return i
+        raise KeyError(f"Kolom '{name}' tidak ditemukan.")
 
-    # 2) kandidat delimiter umum
-    best_rows, best_score = [], -1
-    for d in [",", ";", "\t"]:
-        sio = io.StringIO(text)
-        rows = [r for r in csv.reader(sio, delimiter=d) if any(c.strip() for c in r)]
-        score = sum(len(r) for r in rows)
-        if score > best_score:
-            best_rows, best_score = rows, score
-    if best_rows:
-        return best_rows
+    idx_tp9  = find_idx("RAW_TP9")
+    idx_af7  = find_idx("RAW_AF7")
+    idx_af8  = find_idx("RAW_AF8")
+    idx_tp10 = find_idx("RAW_TP10")
 
-    # 3) regex fallback
-    rows = []
-    for line in text.splitlines():
-        parts = re.split(r"[;,|\t]| {2,}", line.strip())
-        if any(p.strip() for p in parts):
-            rows.append(parts)
-    return rows
-
-def parse_row_to_4nums_strict(row: List[str]) -> List[float]:
-    """
-    Ambil TEPAT 4 angka dari kolom 1..4 pada baris.
-    Kalau ada yang tak bisa diparse → None (bukan 0).
-    """
-    vals = []
-    for cell in (row + ["", "", "", ""])[:4]:
-        v = try_float(cell)
-        vals.append(v if v is not None else None)
-    return vals  # len 4
-
-def make_values_for_row(rows: List[List[str]], row_1based: int) -> Dict[str, float]:
-    """
-    Ambil 4 angka dari baris terpilih (1-based) → map ke AF7,AF8,TP9,TP10.
-    Minimal 3 angka valid; jika kurang, coba isi dari baris berikutnya.
-    """
-    idx = max(0, min(len(rows) - 1, row_1based - 1))
-    vals = parse_row_to_4nums_strict(rows[idx])
-
-    valid_cnt = sum(1 for v in vals if v is not None)
-    if valid_cnt < 3:
-        j = idx + 1
-        while valid_cnt < 3 and j < len(rows):
-            more = parse_row_to_4nums_strict(rows[j])
-            for k in range(4):
-                if vals[k] is None and more[k] is not None:
-                    vals[k] = more[k]
-            valid_cnt = sum(1 for v in vals if v is not None)
-            j += 1
-
-    if valid_cnt < 3:
-        raise ValueError(f"Baris ke-{row_1based} tidak memiliki cukup angka (>=3) untuk topoplot.")
-
-    mapped = {ch: float(v) for ch, v in zip(DEFAULT_LAYOUT, vals) if v is not None}
-    return mapped
-
-def make_labeled_csv_all_rows(rows: List[List[str]]) -> str:
-    """
-    Hasilkan CSV berlabel dengan header AF7,AF8,TP9,TP10
-    dan jumlah baris = jumlah baris file mentah.
-    Tiap baris: 4 kolom pertama diparse; kolom gagal → kosong (""), tidak jadi 0.
-    """
-    out = io.StringIO()
-    w = csv.writer(out)
-    w.writerow(DEFAULT_LAYOUT)  # header
-
+    TP9, AF7, AF8, TP10 = [], [], [], []
     for r in rows:
-        vals = parse_row_to_4nums_strict(r)  # len 4, float/None
-        row_out = []
-        for v in vals:
-            row_out.append("" if v is None else f"{float(v):.6f}")
-        w.writerow(row_out)
+        def get(r, i):
+            if i >= len(r): return np.nan
+            v = try_float(r[i])
+            return v if v is not None else np.nan
+        TP9.append(get(r, idx_tp9))
+        AF7.append(get(r, idx_af7))
+        AF8.append(get(r, idx_af8))
+        TP10.append(get(r, idx_tp10))
 
-    return out.getvalue()
+    return {
+        "TP9":  np.asarray(TP9, dtype=float),
+        "AF7":  np.asarray(AF7, dtype=float),
+        "AF8":  np.asarray(AF8, dtype=float),
+        "TP10": np.asarray(TP10, dtype=float),
+    }
 
-# ----------------- ROUTE -----------------
-@app.post("/topoplot_csv_label")
-def topoplot_csv_label():
+def segment_indices(total_samples: int, fs: float, plan: List[Tuple[str, float]]) -> List[Tuple[str, int, int, float, float]]:
+    segs = []
+    t_cursor = 0.0
+    s_cursor = 0
+    for label, dur in plan:
+        n = int(round(dur * fs))
+        i0 = s_cursor
+        i1 = min(total_samples, s_cursor + n)
+        t0 = t_cursor
+        t1 = t_cursor + dur
+        if i0 >= total_samples:
+            break
+        segs.append((label, i0, i1, t0, t1))
+        s_cursor += n
+        t_cursor += dur
+        if s_cursor >= total_samples:
+            break
+    return segs
+
+def segment_means(sig: Dict[str, np.ndarray], i0: int, i1: int) -> Dict[str, float]:
+    vals = {}
+    for ch in ["AF7", "AF8", "TP9", "TP10"]:
+        arr = sig[ch][i0:i1]
+        if arr.size == 0:
+            vals[ch] = None
+            continue
+        m = float(np.nanmean(arr)) if np.isfinite(arr).any() else None
+        vals[ch] = m
+    return vals
+
+# ----------------- ROUTE: 17 Topoplot dalam 1 Gambar -----------------
+@app.post("/topoplot_17")
+def topoplot_17():
     """
     Form-data:
-      file   : CSV tanpa header (4 kolom angka per baris)
-      return : 'zip' (default) | 'base64'
-      dpi    : int (default 150)
-      row    : baris 1-based dipakai untuk topoplot (default 1)
+      file : CSV dengan header, kolom wajib:
+             RAW_TP9, RAW_AF7, RAW_AF8, RAW_TP10
+             (opsional: Time)
+      return : 'image' (default) | 'base64' | 'zip'
 
     Output:
-      - zip   : topoplot.png + labeled.csv (semua baris)
-      - base64: JSON { image_base64, labeled_csv, row_used }
+      - image: 1 file PNG gabungan
+      - base64: JSON dengan image base64
+      - zip: ZIP berisi image + manifest + values + meta
     """
     try:
-        ret = (request.form.get("return") or request.args.get("return") or "zip").lower()
-        dpi = int(request.form.get("dpi") or request.args.get("dpi") or 150)
-        row_param = request.form.get("row") or request.args.get("row")
-        row_1based = int(row_param) if row_param else 2
+        ret = (request.form.get("return") or request.args.get("return") or "image").lower()
+        fs_default = 256.0
 
-        # ambil CSV
+        # Ambil CSV
         if "file" in request.files:
-            rows = read_rows_any(request.files["file"])
+            header, rows = read_csv_with_header(request.files["file"])
         elif request.files:
-            rows = read_rows_any(next(iter(request.files.values())))
+            header, rows = read_csv_with_header(next(iter(request.files.values())))
         else:
-            rows = read_rows_any(request.get_data())
+            header, rows = read_csv_with_header(request.get_data())
 
-        if not rows:
-            return jsonify({"error": "CSV kosong."}), 400
+        if not header or not rows:
+            return jsonify({"error": "CSV kosong atau header tidak ditemukan."}), 400
 
-        # nilai untuk topoplot
-        values = make_values_for_row(rows, row_1based=row_1based)
+        # Ambil sinyal
+        signals = series_from_csv(header, rows)
 
-        # gambar (IDW)
-        buf_img = make_topoplot(values, dpi=dpi)
+        # Estimasi fs jika ada kolom Time
+        fs_est = estimate_fs_from_time(header, rows)
+        fs = fs_est if (fs_est and np.isfinite(fs_est) and fs_est > 0.5) else fs_default
 
-        # CSV berlabel untuk SEMUA baris
-        labeled_csv_str = make_labeled_csv_all_rows(rows)
-        labeled_csv_bytes = labeled_csv_str.encode("utf-8")
+        total_samples = len(rows)
+        plan = build_segment_plan()
+        segs = segment_indices(total_samples, fs, plan)
+
+        # Filter hanya Netral & Control, ambil 17 pertama
+        wanted = []
+        for (label, i0, i1, t0, t1) in segs:
+            if label.lower() in ("netral", "control"):
+                wanted.append((label, i0, i1, t0, t1))
+        if len(wanted) < 17:
+            return jsonify({
+                "error": f"Data terlalu pendek untuk 17 segmen Netral/Control. Hanya {len(wanted)} segmen ditemukan.",
+                "fs_used": fs,
+                "total_samples": total_samples
+            }), 400
+
+        wanted = wanted[:17]
+
+        # Hitung mean per segmen
+        segments_data = []
+        manifest_out = io.StringIO()
+        mv = csv.writer(manifest_out)
+        mv.writerow(["idx", "label", "i0", "i1", "t0_sec", "t1_sec", "duration_sec"])
+
+        values_out = io.StringIO()
+        vv = csv.writer(values_out)
+        vv.writerow(["idx", "label", "AF7", "AF8", "TP9", "TP10"])
+
+        n_count, c_count = 0, 0
+        for idx, (label, i0, i1, t0, t1) in enumerate(wanted, start=1):
+            vals = segment_means(signals, i0, i1)
+
+            vv.writerow([
+                idx, label,
+                "" if vals["AF7"]  is None else f"{vals['AF7']:.6f}",
+                "" if vals["AF8"]  is None else f"{vals['AF8']:.6f}",
+                "" if vals["TP9"]  is None else f"{vals['TP9']:.6f}",
+                "" if vals["TP10"] is None else f"{vals['TP10']:.6f}",
+            ])
+
+            if label.lower() == "netral":
+                n_count += 1
+                name = f"N{n_count:02d}"
+            else:
+                c_count += 1
+                name = f"C{c_count:02d}"
+
+            segments_data.append((name, vals))
+            mv.writerow([idx, label, i0, i1, f"{t0:.3f}", f"{t1:.3f}", f"{(t1-t0):.3f}"])
+
+        # Buat 1 gambar gabungan
+        combined_img = make_combined_topoplot(segments_data)
+
+        meta_txt = (
+            f"fs_used={fs:.6f} Hz\n"
+            f"total_samples={total_samples}\n"
+            f"segments_generated=17 (Netral={n_count}, Control={c_count})\n"
+            f"channels_source=RAW_TP9,RAW_AF7,RAW_AF8,RAW_TP10 -> (TP9,AF7,AF8,TP10)\n"
+            f"channel_map_topoplot=AF7,AF8,TP9,TP10 (+ Fz,Pz,Cz sintetis)\n"
+        )
+
+        values_csv = values_out.getvalue()
+        manifest_csv = manifest_out.getvalue()
 
         if ret == "base64":
-            img_b64 = base64.b64encode(buf_img.getvalue()).decode("ascii")
+            b64 = base64.b64encode(combined_img.getvalue()).decode("ascii")
             return jsonify({
-                "image_base64": img_b64,
-                "labeled_csv": labeled_csv_str,
-                "row_used": row_1based
+                "image": b64,
+                "manifest_csv": manifest_csv,
+                "values_csv": values_csv,
+                "meta": meta_txt
             }), 200
 
-        # default: ZIP
-        zip_buf = io.BytesIO()
-        with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED) as zf:
-            zf.writestr("topoplot.png", buf_img.getvalue())
-            zf.writestr("labeled.csv", labeled_csv_bytes)
-            zf.writestr("meta.txt", f"row_used={row_1based}\nchannels={','.join(DEFAULT_LAYOUT)}\n")
-        zip_buf.seek(0)
-        return send_file(zip_buf, mimetype="application/zip",
-                         as_attachment=True, download_name="topoplot_and_labeled.zip")
+        if ret == "zip":
+            zip_buf = io.BytesIO()
+            with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED) as zf:
+                zf.writestr("topoplot_17_combined.png", combined_img.getvalue())
+                zf.writestr("manifest.csv", manifest_csv.encode("utf-8"))
+                zf.writestr("values.csv", values_csv.encode("utf-8"))
+                zf.writestr("meta.txt", meta_txt.encode("utf-8"))
+            zip_buf.seek(0)
+            return send_file(zip_buf, mimetype="application/zip",
+                             as_attachment=True, download_name="topoplot_17.zip")
+
+        # default: return image
+        return send_file(combined_img, mimetype="image/png",
+                         as_attachment=True, download_name="topoplot_17_combined.png")
+
+    except KeyError as ke:
+        return jsonify({"error": f"Kolom CSV wajib tidak ditemukan: {str(ke)}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
