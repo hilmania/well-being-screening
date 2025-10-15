@@ -2,79 +2,276 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Topoplot 4-Channel Viewer</title>
+  <title>Topoplot 17 Gabungan</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #preview { margin-top: 20px; }
-    img { max-width: 400px; border: 1px solid #ccc; padding: 5px; }
-    pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
-    .err { color: #b00020; white-space: pre-wrap; }
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 40px auto;
+      max-width: 1200px;
+      padding: 0 20px;
+    }
+    h2 { color: #333; margin-bottom: 10px; }
+    .subtitle { color: #666; margin-bottom: 30px; }
+    .upload-section {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+    .field { 
+      display: flex; 
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+    label { 
+      font-weight: bold; 
+      margin-bottom: 8px;
+      color: #333;
+    }
+    input[type="file"] {
+      padding: 10px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+    }
+    input[type="file"]:hover {
+      border-color: #333;
+    }
+    small { 
+      color: #666; 
+      margin-top: 5px;
+      display: block;
+    }
+    .btn { 
+      padding: 12px 24px; 
+      border: none;
+      background: #333; 
+      color: #fff; 
+      border-radius: 8px; 
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #555;
+    }
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    #preview { margin-top: 30px; }
+    .result-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .result-image {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 20px 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .downloads { 
+      display: flex; 
+      gap: 10px; 
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .btn-secondary { 
+      background: #fff; 
+      color: #333;
+      border: 2px solid #333;
+    }
+    .btn-secondary:hover {
+      background: #f0f0f0;
+    }
+    pre { 
+      background: #f5f5f5; 
+      padding: 15px; 
+      overflow-x: auto; 
+      border-radius: 8px;
+      border-left: 4px solid #333;
+    }
+    .err { 
+      color: #d32f2f; 
+      background: #ffebee;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #d32f2f;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #333;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <h2>Upload CSV 4 Kolom & Generate Topoplot</h2>
-  <form id="uploadForm">
-    <input type="file" id="csvFile" name="file" accept=".csv" required />
-    <br /><br />
-    <button type="submit">Generate</button>
-  </form>
+  <h2>Topoplot 17 Segmen (Netral/Control)</h2>
+  <p class="subtitle">Upload file CSV untuk menghasilkan 1 gambar gabungan dari 17 topoplot</p>
+
+  <div class="upload-section">
+    <form id="uploadForm">
+      <div class="field">
+        <label for="csvFile">File CSV</label>
+        <input type="file" id="csvFile" name="file" accept=".csv" required />
+        <small>File harus memiliki kolom: <b>RAW_TP9, RAW_AF7, RAW_AF8, RAW_TP10</b><br>
+        Opsional: kolom <b>Time</b> untuk mendeteksi sampling rate otomatis</small>
+      </div>
+      <button class="btn" type="submit" id="submitBtn">Generate Topoplot</button>
+    </form>
+  </div>
 
   <div id="preview"></div>
 
   <script>
-    const API_URL = "http://127.0.0.1:8000/topoplot_csv_label";
+    const API_URL = "http://127.0.0.1:8000/topoplot_17";
+
+    function downloadTextAsFile(filename, text) {
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadImage(base64, filename) {
+      const blob = base64ToBlob(base64, 'image/png');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function base64ToBlob(base64, mimeType) {
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      return new Blob([byteArray], { type: mimeType });
+    }
 
     document.getElementById("uploadForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const fileInput = document.getElementById("csvFile");
+      const submitBtn = document.getElementById("submitBtn");
+
       if (!fileInput.files.length) {
-        alert("Silakan pilih file CSV 4 kolom dahulu.");
+        alert("Silakan pilih file CSV terlebih dahulu.");
         return;
       }
 
       const fd = new FormData();
       fd.append("file", fileInput.files[0]);
-      fd.append("return", "base64");  // kita pakai base64 supaya bisa langsung tampil
+      fd.append("return", "base64");
 
       const preview = document.getElementById("preview");
-      preview.innerHTML = "Processing...";
+      preview.innerHTML = `
+        <div class="result-container">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Memproses data dan membuat topoplot...</p>
+          </div>
+        </div>
+      `;
+      submitBtn.disabled = true;
 
       try {
-        const resp = await fetch(API_URL, {
-          method: "POST",
-          body: fd
-        });
+        const resp = await fetch(API_URL, { method: "POST", body: fd });
+        
         if (!resp.ok) {
-          let errMsg = `HTTP ${resp.status}`;
           try {
             const j = await resp.json();
-            if (j && j.error) errMsg += `\n${j.error}`;
-          } catch (_) {}
-          throw new Error(errMsg);
+            const err = j && j.error ? j.error : `HTTP ${resp.status}`;
+            throw new Error(err);
+          } catch (_) {
+            throw new Error(`HTTP Error ${resp.status}`);
+          }
         }
+        
         const data = await resp.json();
+
+        const container = document.createElement("div");
+        container.className = "result-container";
+
+        const title = document.createElement("h3");
+        title.textContent = "Hasil: Topoplot 17 Segmen Gabungan";
+        container.appendChild(title);
+
+        const downloads = document.createElement("div");
+        downloads.className = "downloads";
+
+        const btnImage = document.createElement("button");
+        btnImage.className = "btn btn-secondary";
+        btnImage.textContent = "💾 Download Gambar";
+        btnImage.onclick = () => downloadImage(data.image, "topoplot_17_combined.png");
+        downloads.appendChild(btnImage);
+
+        const btnManifest = document.createElement("button");
+        btnManifest.className = "btn btn-secondary";
+        btnManifest.textContent = "📄 Download manifest.csv";
+        btnManifest.onclick = () => downloadTextAsFile("manifest.csv", data.manifest_csv || "");
+        downloads.appendChild(btnManifest);
+
+        const btnValues = document.createElement("button");
+        btnValues.className = "btn btn-secondary";
+        btnValues.textContent = "📊 Download values.csv";
+        btnValues.onclick = () => downloadTextAsFile("values.csv", data.values_csv || "");
+        downloads.appendChild(btnValues);
+
+        container.appendChild(downloads);
+
         const img = document.createElement("img");
-        img.alt = "Topoplot";
-        img.src = "data:image/png;base64," + data.image_base64;
+        img.className = "result-image";
+        img.alt = "Topoplot 17 Gabungan";
+        img.src = "data:image/png;base64," + data.image;
+        container.appendChild(img);
 
-        const pre = document.createElement("pre");
-        pre.textContent = data.labeled_csv;
+        const metaTitle = document.createElement("h4");
+        metaTitle.textContent = "Informasi Metadata:";
+        container.appendChild(metaTitle);
 
-        const dl = document.createElement("a");
-        dl.href = "data:text/csv;charset=utf-8," + encodeURIComponent(data.labeled_csv);
-        dl.download = "labeled.csv";
-        dl.textContent = "Download labeled.csv";
+        const metaPre = document.createElement("pre");
+        metaPre.textContent = data.meta || "";
+        container.appendChild(metaPre);
 
-        preview.innerHTML = "<h3>Hasil</h3>";
-        preview.appendChild(img);
-        preview.appendChild(document.createElement("br"));
-        preview.appendChild(dl);
-        preview.appendChild(document.createElement("h4")).innerText = "CSV berlabel:";
-        preview.appendChild(pre);
+        preview.innerHTML = "";
+        preview.appendChild(container);
 
       } catch (err) {
-        preview.innerHTML = `<div class="err"><b>Error:</b><br>${err.message}</div>`;
+        preview.innerHTML = `
+          <div class="result-container">
+            <div class="err">
+              <b>Error:</b><br>${(err && err.message) || err}
+            </div>
+          </div>
+        `;
         console.error(err);
+      } finally {
+        submitBtn.disabled = false;
       }
     });
   </script>
