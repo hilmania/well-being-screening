@@ -7,7 +7,7 @@
   <meta name="description" content="Website untuk layanan screening KDRT dan konsultasi psikologi profesional guna mendukung kesehatan mental Anda.">
   <meta name="keywords" content="screening KDRT, konsultasi psikologi, kesehatan mental, dukungan emosional, layanan psikologi online">
   <meta name="author" content="Universitas Telkom">
-  <title>WellBeing - Care for your wellbeing</title>
+  <title>KBBLawanKDRT - Care for your wellbeing</title>
   <link rel="shortcut icon" href="./assets/img/favicon.png">
 	<link rel="stylesheet" type="text/css" href="./assets/fonts/unicons/unicons.css">
   <link rel="stylesheet" href="./assets/css/plugins.css">
@@ -88,11 +88,11 @@
             {{-- <a href="./index.html">
               <img src="./assets/img/logo-dark.png" srcset="./assets/img/logo-dark@2x.png 2x" alt="image">
             </a> --}}
-            <h2>MyWellbeing</h2>
+            <h2>KBB Lawan KDRT</h2>
           </div>
           <div class="navbar-collapse offcanvas offcanvas-nav offcanvas-start">
             <div class="offcanvas-header xl:!hidden lg:!hidden flex items-center justify-between flex-row p-6">
-              <h3 class="!text-white xl:!text-[1.5rem] !text-[calc(1.275rem_+_0.3vw)] !mb-0">Wellbeing</h3>
+              <h3 class="!text-white xl:!text-[1.5rem] !text-[calc(1.275rem_+_0.3vw)] !mb-0">KBBLawanKDRT</h3>
               <button type="button" class="btn-close btn-close-white !mr-[-0.75rem] m-0 p-0 leading-none !text-[#343f52] transition-all duration-[0.2s] ease-in-out border-0 motion-reduce:transition-none before:text-[1.05rem] before:text-white before:content-['\ed3b'] before:w-[1.8rem] before:h-[1.8rem] before:leading-[1.8rem] before:shadow-none before:transition-[background] before:duration-[0.2s] before:ease-in-out before:!flex before:justify-center before:items-center before:m-0 before:p-0 before:rounded-[100%] hover:no-underline bg-inherit before:bg-[rgba(255,255,255,.08)] before:font-Unicons hover:before:bg-[rgba(0,0,0,.11)]  " data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body xl:!ml-auto lg:!ml-auto flex  flex-col !h-full">
